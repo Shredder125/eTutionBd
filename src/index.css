@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* Optional: Set your font or global styles here */
+body {
+  font-family: 'Inter', sans-serif;
+}
+.navbar {
+  /* Essential for sticky behavior */
+  position: sticky;
+  top: 0;
+  
+  /* Ensures it stays above other content */
+  z-index: 1000; 
+  
+  /* Optional: Background color is usually needed so content doesn't show through */
+  background-color: white; 
+}
