@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, NavLink, Link, useNavigate } from "react-router-dom";
 import { 
-  BookOpen, 
-  PlusCircle, 
-  Users, 
-  CreditCard, 
-  User, 
-  Menu, 
-  LogOut,
-  Shield, 
-  TrendingUp // ✅ NEW ICON
+  BookOpen, PlusCircle, Users, CreditCard, User, Menu, LogOut, Shield, TrendingUp, Briefcase, DollarSign, Calendar
 } from "lucide-react";
 import { useUserAuth } from "../context/AuthContext";
 
@@ -17,8 +9,10 @@ const DashboardLayout = () => {
   const { user, logOut } = useUserAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isTutor, setIsTutor] = useState(false); // ✅ NEW STATE
   const navigate = useNavigate();
 
+  // --- CHECK USER ROLE ---
   useEffect(() => {
     if(user?.email) {
         const token = localStorage.getItem('access-token');
@@ -27,9 +21,8 @@ const DashboardLayout = () => {
         })
         .then(res => res.json())
         .then(data => {
-            if (data.role === 'admin') {
-                setIsAdmin(true);
-            }
+            if (data.role === 'admin') setIsAdmin(true);
+            if (data.role === 'tutor') setIsTutor(true); // ✅ CHECK TUTOR
         })
         .catch(err => console.error(err));
     }
@@ -58,76 +51,68 @@ const DashboardLayout = () => {
               <div className="mb-6">
                 <p className="px-4 text-xs font-bold text-gray-400 uppercase mb-2">Admin Controls</p>
                 
-                <NavLink
-                  to="/dashboard/manage-tuitions"
-                  onClick={() => setIsSidebarOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
-                      isActive 
-                        ? "bg-red-50 text-red-600 shadow-sm border border-red-100" 
-                        : "text-gray-600 hover:bg-gray-50 hover:text-red-600"
-                    }`
-                  }
-                >
-                  <Shield size={20} />
-                  <span>Manage Tuitions</span>
+                <NavLink to="/dashboard/manage-tuitions" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${isActive ? "bg-red-50 text-red-600 shadow-sm border border-red-100" : "text-gray-600 hover:bg-gray-50 hover:text-red-600"}`}>
+                  <Shield size={20} /> <span>Manage Tuitions</span>
                 </NavLink>
 
-                <NavLink
-                  to="/dashboard/manage-users"
-                  onClick={() => setIsSidebarOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
-                      isActive 
-                        ? "bg-blue-50 text-blue-600 shadow-sm border border-blue-100" 
-                        : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"
-                    }`
-                  }
-                >
-                  <Users size={20} />
-                  <span>Manage Users</span>
+                <NavLink to="/dashboard/manage-users" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${isActive ? "bg-blue-50 text-blue-600 shadow-sm border border-blue-100" : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"}`}>
+                  <Users size={20} /> <span>Manage Users</span>
                 </NavLink>
 
-                {/* ✅ NEW: Reports & Analytics */}
-                <NavLink
-                  to="/dashboard/admin-stats"
-                  onClick={() => setIsSidebarOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
-                      isActive 
-                        ? "bg-purple-50 text-purple-600 shadow-sm border border-purple-100" 
-                        : "text-gray-600 hover:bg-gray-50 hover:text-purple-600"
-                    }`
-                  }
-                >
-                  <TrendingUp size={20} />
-                  <span>Reports & Analytics</span>
+                <NavLink to="/dashboard/admin-stats" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${isActive ? "bg-purple-50 text-purple-600 shadow-sm border border-purple-100" : "text-gray-600 hover:bg-gray-50 hover:text-purple-600"}`}>
+                  <TrendingUp size={20} /> <span>Reports & Analytics</span>
+                </NavLink>
+
+                <div className="divider my-2"></div>
+              </div>
+            )}
+            
+            {/* 🎓 TUTOR SECTION */}
+            {isTutor && (
+              <div className="mb-6">
+                <p className="px-4 text-xs font-bold text-gray-400 uppercase mb-2">Tutor Menu</p>
+                
+                <NavLink to="/dashboard/my-applications" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
+                  <Briefcase size={20} /> <span>My Applications</span>
+                </NavLink>
+
+                <NavLink to="/dashboard/ongoing-tuitions" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-cyan-50 text-cyan-600" : "text-gray-600 hover:bg-gray-100"}`}>
+                  <Calendar size={20} /> <span>Ongoing Tuitions</span>
+                </NavLink>
+                
+                <NavLink to="/dashboard/my-revenue" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-green-50 text-green-600" : "text-gray-600 hover:bg-gray-100"}`}>
+                  <DollarSign size={20} /> <span>My Income</span>
                 </NavLink>
 
                 <div className="divider my-2"></div>
               </div>
             )}
 
-            {/* 🎓 STUDENT SECTION */}
-            <div>
-              <p className="px-4 text-xs font-bold text-gray-400 uppercase mb-2">Student Menu</p>
-              
-              <NavLink to="/dashboard/post-tuition" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
-                <PlusCircle size={20} /> Post Tuition
-              </NavLink>
-              
-              <NavLink to="/dashboard/my-tuitions" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
-                <BookOpen size={20} /> My Tuitions
-              </NavLink>
-              
-              <NavLink to="/dashboard/applied-tutors" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
-                <Users size={20} /> Applied Tutors
-              </NavLink>
-              
-              <NavLink to="/dashboard/payments" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
-                <CreditCard size={20} /> Payments
-              </NavLink>
-            </div>
+            {/* 📚 STUDENT SECTION (Appears if not Admin/Tutor) */}
+            {!isAdmin && !isTutor && (
+                <div>
+                <p className="px-4 text-xs font-bold text-gray-400 uppercase mb-2">Student Menu</p>
+                <NavLink to="/dashboard/post-tuition" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
+                    <PlusCircle size={20} /> Post Tuition
+                </NavLink>
+                <NavLink to="/dashboard/my-tuitions" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
+                    <BookOpen size={20} /> My Tuitions
+                </NavLink>
+                <NavLink to="/dashboard/applied-tutors" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
+                    <Users size={20} /> Applied Tutors
+                </NavLink>
+                <NavLink to="/dashboard/payments" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
+                    <CreditCard size={20} /> Payments
+                </NavLink>
+                </div>
+            )}
+            
+            {/* Profile Link (Visible to All) */}
+            <div className="divider my-2"></div>
+            <NavLink to="/dashboard/profile" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium ${isActive ? "bg-gray-200 text-gray-800" : "text-gray-600 hover:bg-gray-100"}`}>
+                <User size={20} /> <span>Profile Settings</span>
+            </NavLink>
+
 
           </nav>
 
@@ -140,7 +125,9 @@ const DashboardLayout = () => {
               </div>
               <div className="overflow-hidden">
                 <p className="font-bold text-sm truncate text-gray-800">{user?.displayName || "User"}</p>
-                <p className="text-xs text-gray-500 truncate">{isAdmin ? "Administrator" : "Student"}</p>
+                <p className="text-xs text-gray-500 truncate">
+                    {isAdmin ? "Administrator" : isTutor ? "Tutor" : "Student"}
+                </p>
               </div>
             </div>
             <button 
