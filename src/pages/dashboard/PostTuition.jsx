@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { BookOpen, MapPin, DollarSign, Layers, FileText, Loader2, CheckCircle } from "lucide-react";
 
 const PostTuition = () => {
-  const { user } = useUserAuth(); // Get logged in user details
+  const { user } = useUserAuth(); 
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(false);
@@ -24,26 +24,30 @@ const PostTuition = () => {
     const newTuition = {
       studentName: user?.displayName,
       studentEmail: user?.email,
-      studentPhoto: user?.photoURL, // Optional: helpful for displaying avatar later
+      studentPhoto: user?.photoURL,
       subject,
       classGrade,
       location,
-      budget: parseInt(budget), // Ensure budget is a number
+      budget: parseInt(budget),
       description,
-      // Status 'pending' and 'createdAt' are handled by your backend
     };
 
     try {
-      // 1. Get the current Token for security
-      const token = await user.getIdToken();
+      // ✅ FIX: Get the Custom Token from Local Storage
+      const token = localStorage.getItem('access-token');
+
+      if (!token) {
+        alert("Authentication token missing. Please logout and login again.");
+        setLoading(false);
+        return;
+      }
 
       // 2. Send Data to Your Backend
       const response = await fetch("http://localhost:5000/tuitions", {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          // 🔥 IMPORTANT: This matches your verifyToken middleware
-          authorization: `Bearer ${token}`, 
+          authorization: `Bearer ${token}`, // Sending the correct token
         },
         body: JSON.stringify(newTuition),
       });
@@ -53,8 +57,10 @@ const PostTuition = () => {
       if (data.insertedId) {
         setSuccess(true);
         form.reset();
-        // Optional: Redirect after 2 seconds
         setTimeout(() => navigate("/dashboard/my-tuitions"), 2000);
+      } else {
+        // Handle backend errors (like forbidden access)
+        alert(data.message || "Failed to post tuition");
       }
     } catch (error) {
       console.error("Error posting tuition:", error);
@@ -89,7 +95,6 @@ const PostTuition = () => {
       <div className="bg-white rounded-xl shadow-sm border border-base-200 p-6 md:p-8">
         <form onSubmit={handlePostTuition} className="space-y-6">
           
-          {/* Row 1: Subject & Class */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="form-control w-full">
               <label className="label"><span className="label-text font-medium">Subject</span></label>
@@ -115,7 +120,6 @@ const PostTuition = () => {
             </div>
           </div>
 
-          {/* Row 2: Location & Budget */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="form-control w-full">
               <label className="label"><span className="label-text font-medium">Location</span></label>
@@ -134,26 +138,22 @@ const PostTuition = () => {
             </div>
           </div>
 
-          {/* Description */}
           <div className="form-control w-full">
             <label className="label"><span className="label-text font-medium">Description / Requirements</span></label>
             <div className="relative">
               <FileText className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-              <textarea name="description" className="textarea textarea-bordered h-24 w-full pl-10 focus:textarea-primary" placeholder="Describe your requirements (e.g. 3 days a week, female tutor preferred...)" required></textarea>
+              <textarea name="description" className="textarea textarea-bordered h-24 w-full pl-10 focus:textarea-primary" placeholder="Describe your requirements..." required></textarea>
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="pt-4">
             <button 
               type="submit" 
               disabled={loading}
-              className="btn btn-primary w-full text-white font-bold text-lg shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all"
+              className="btn btn-primary w-full text-white font-bold text-lg shadow-lg"
             >
               {loading ? (
-                <>
-                  <Loader2 className="animate-spin mr-2" /> Posting...
-                </>
+                <> <Loader2 className="animate-spin mr-2" /> Posting... </>
               ) : (
                 "Post Tuition Request"
               )}

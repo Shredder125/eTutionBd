@@ -1,24 +1,23 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom"; // <--- 1. Import Navigate
 import MainLayout from "../layout/MainLayout";
-import DashboardLayout from "../layout/DashboardLayout"; // Import the Sidebar Layout
-import PrivateRoute from "./PrivateRoute"; // Import Security Wrapper
+import DashboardLayout from "../layout/DashboardLayout"; 
+import PrivateRoute from "./PrivateRoute"; 
 
-// Pages
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import AllTutors from "../pages/AllTutors";
+import Tuitions from "../pages/Tuitions";
 
-// Dashboard Pages
 import PostTuition from "../pages/dashboard/PostTuition";
-// Note: We will create MyTuitions in the next step, make sure the file exists or create a placeholder
 import MyTuitions from "../pages/dashboard/MyTuitions"; 
+import AppliedTutors from "../pages/dashboard/AppliedTutors"; 
+import UpdateTuition from "../pages/dashboard/UpdateTuition"; 
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
-    // These pages have Navbar & Footer
     children: [
       {
         path: "/",
@@ -28,10 +27,13 @@ export const router = createBrowserRouter([
         path: "/tutors",
         element: <AllTutors />,
       },
+      {
+        path: "/tuitions",
+        element: <Tuitions />,
+      },
     ],
   },
   {
-    // --- DASHBOARD ROUTES (Protected + Sidebar) ---
     path: "/dashboard",
     element: (
       <PrivateRoute>
@@ -39,21 +41,30 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
+      // ✅ 2. ADD THIS LINE: Redirects /dashboard -> /dashboard/post-tuition
+      { 
+        index: true, 
+        element: <Navigate to="/dashboard/post-tuition" replace /> 
+      },
       {
-        // This will be accessible at: /dashboard/post-tuition
         path: "post-tuition", 
         element: <PostTuition />,
       },
       {
-        // This will be accessible at: /dashboard/my-tuitions
         path: "my-tuitions", 
         element: <MyTuitions />,
       },
-      // You can add more dashboard pages here later (e.g., Profile, Settings)
+      {
+        path: "applied-tutors", 
+        element: <AppliedTutors />, 
+      },
+      {
+        path: "update-tuition/:id", 
+        element: <UpdateTuition />, 
+      },
     ],
   },
   {
-    // Standalone Pages (No Navbar/Footer)
     path: "/login",
     element: <Login />,
   },

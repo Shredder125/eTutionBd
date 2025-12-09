@@ -10,27 +10,27 @@ const AllTutors = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // ✅ FIX: Force the page to start at the top when loaded
     window.scrollTo(0, 0);
 
     const fetchTutors = async () => {
       try {
         setIsLoading(true);
         
-        // 1. Fetch ALL users from your backend
-        const response = await fetch("http://localhost:5000/users"); 
+        // ✅ FIX: Use the specific endpoint for tutors
+        const response = await fetch("http://localhost:5000/all-tutors"); 
         
         if (!response.ok) {
           throw new Error("Failed to fetch data");
         }
 
-        const allData = await response.json();
-
-        // 2. FILTER: Keep only users who are Tutors
-        const onlyTutors = allData.filter((user) => user.role === "Tutor");
+        const data = await response.json();
         
-        // 3. Update State
-        setTutors(onlyTutors);
+        // Backend now filters for us, so we just set the state
+        if (Array.isArray(data)) {
+            setTutors(data);
+        } else {
+            setTutors([]);
+        }
 
       } catch (err) {
         console.error("Error fetching tutors:", err);
@@ -41,9 +41,9 @@ const AllTutors = () => {
     };
 
     fetchTutors();
-  }, []); // Empty dependency array means this runs once when the component mounts
+  }, []); 
 
-  // 4. SEARCH FILTER: Filter the "Tutors Only" list by name
+  // Search Filter (Client Side)
   const filteredTutors = tutors.filter((tutor) =>
     tutor.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -115,7 +115,6 @@ const AllTutors = () => {
             {filteredTutors.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center">
                 {filteredTutors.map((tutor) => (
-                  // Uses _id from MongoDB
                   <TutorCard key={tutor._id} tutor={tutor} />
                 ))}
               </div>
