@@ -15,7 +15,8 @@ import MyTuitions from "../pages/dashboard/MyTuitions";
 import AppliedTutors from "../pages/dashboard/AppliedTutors"; 
 import UpdateTuition from "../pages/dashboard/UpdateTuition"; 
 import PaymentHistory from "../pages/dashboard/PaymentHistory"; 
-import Payment from "../pages/dashboard/payment/Payment";       
+import Payment from "../pages/dashboard/payment/Payment"; 
+import Profile from "../pages/dashboard/Profile";      
 
 import ManageTuitions from "../pages/dashboard/admin/ManageTuitions"; 
 import ManageUsers from "../pages/dashboard/admin/ManageUsers";
@@ -98,6 +99,10 @@ export const router = createBrowserRouter([
       {
         path: "my-revenue", 
         element: <TutorRevenue />, 
+      },
+      {
+        path: "profile", 
+        element: <Profile />, 
       }
     ],
   },
