@@ -1,22 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import CountUp from "react-countup";
 import { useInView } from "react-intersection-observer";
 import { 
-  Search, 
-  BookOpen, 
-  Users, 
-  CheckCircle, 
-  ArrowRight, 
-  ShieldCheck, 
-  Zap,
-  DollarSign,
-  MapPin,
-  Clock
+    Search, BookOpen, Users, CheckCircle, ArrowRight, ShieldCheck, Zap,
+    DollarSign, MapPin, Clock, Loader2 
 } from "lucide-react";
 
-// IMPORTANT: Importing the component
 import TutorCard from "../components/TutorCard"; 
 
 /* --- CSS FOR MARQUEE ANIMATION --- */
@@ -33,128 +24,19 @@ const marqueeStyle = `
   }
 `;
 
-/* --- MOCK DATA FOR STATS --- */
-const STATS_DATA = [
+/* --- LIVE STATS DATA (Used for CountUp placeholders) --- */
+// Using local definitions for static text/values not fetched from the backend
+const STATIC_STATS_DATA = [
   { label: "Active Tutors", val: 5000, suffix: "+" },
   { label: "Happy Students", val: 12000, suffix: "+" },
   { label: "Subjects", val: 50, suffix: "+" },
   { label: "Districts", val: 64, suffix: "" },
 ];
 
-/* --- MOCK DATABASE --- */
-const ALL_USERS_DB = [
-  {
-    id: 1,
-    name: "Mark Lopez",
-    email: "mark.lopez@example.com",
-    role: "Tutor",
-    phone: "+1-555-0120",
-    experience: 6,
-    studentEnrollments: 28,
-    tuitionSchedule: [
-      { day: "Mon", startTime: "17:00", endTime: "19:00" },
-      { day: "Wed", startTime: "17:00", endTime: "19:00" },
-      { day: "Fri", startTime: "17:00", endTime: "19:00" }
-    ]
-  },
-  {
-    id: 2,
-    name: "Sarah Jenkins",
-    email: "sarah.j@example.com",
-    role: "Student",
-    phone: "+1-555-0199",
-    experience: 0,
-    studentEnrollments: 0,
-    tuitionSchedule: []
-  },
-  {
-    id: 3,
-    name: "Ayesha Rahman",
-    email: "ayesha.r@example.com",
-    role: "Tutor",
-    phone: "+880-1711-0000",
-    experience: 4,
-    studentEnrollments: 45,
-    tuitionSchedule: [
-      { day: "Sun", startTime: "15:00", endTime: "17:00" },
-      { day: "Tue", startTime: "15:00", endTime: "17:00" }
-    ]
-  },
-  {
-    id: 4,
-    name: "Rahim Uddin",
-    email: "rahim.u@example.com",
-    role: "Tutor",
-    phone: "+880-1811-2222",
-    experience: 8,
-    studentEnrollments: 110,
-    tuitionSchedule: [
-      { day: "Fri", startTime: "10:00", endTime: "12:00" },
-      { day: "Sat", startTime: "10:00", endTime: "12:00" }
-    ]
-  },
-  // Adding a few more dummy tutors to make the marquee look better
-  {
-    id: 5,
-    name: "John Doe",
-    email: "john.d@example.com",
-    role: "Tutor",
-    phone: "+1-555-9999",
-    experience: 12,
-    studentEnrollments: 200,
-    tuitionSchedule: [
-      { day: "Mon", startTime: "14:00", endTime: "16:00" },
-      { day: "Thu", startTime: "14:00", endTime: "16:00" }
-    ]
-  }
-];
-
-const LATEST_TUITIONS = [
-  {
-    _id: "1",
-    subject: "Mathematics",
-    class: "Class 10",
-    location: "Dhanmondi, Dhaka",
-    salary: "5000",
-    days: "3 days/week",
-    postedTime: "2 hours ago"
-  },
-  {
-    _id: "2",
-    subject: "English Literature",
-    class: "A Level",
-    location: "Gulshan 2, Dhaka",
-    salary: "8000",
-    days: "2 days/week",
-    postedTime: "5 hours ago"
-  },
-  {
-    _id: "3",
-    subject: "Physics",
-    class: "HSC 1st Year",
-    location: "Uttara, Dhaka",
-    salary: "6000",
-    days: "3 days/week",
-    postedTime: "1 day ago"
-  }
-];
-
 const STEPS = [
-  {
-    icon: Users,
-    title: "Create Account",
-    desc: "Sign up as a Student or Tutor to get started with your personalized dashboard."
-  },
-  {
-    icon: BookOpen,
-    title: "Post or Apply",
-    desc: "Students post requirements. Tutors apply to jobs that match their skills."
-  },
-  {
-    icon: CheckCircle,
-    title: "Match & Learn",
-    desc: "Connect, confirm the tuition, and start your learning journey seamlessly."
-  }
+  { icon: Users, title: "Create Account", desc: "Sign up as a Student or Tutor to get started with your personalized dashboard." },
+  { icon: BookOpen, title: "Post or Apply", desc: "Students post requirements. Tutors apply to jobs that match their skills." },
+  { icon: CheckCircle, title: "Match & Learn", desc: "Connect, confirm the tuition, and start your learning journey seamlessly." }
 ];
 
 const FEATURES = [
@@ -210,9 +92,33 @@ const StatItem = ({ label, val, suffix }) => {
 
 /* --- MAIN PAGE COMPONENT --- */
 const Home = () => {
-  
-  // FILTERING LOGIC: Isolate only tutors
-  const tutorsOnly = ALL_USERS_DB.filter((user) => user.role === "Tutor");
+  const [latestTuitions, setLatestTuitions] = useState([]);
+  const [featuredTutors, setFeaturedTutors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch Dynamic Data
+  useEffect(() => {
+    const fetchHomeData = async () => {
+      try {
+        // 1. Fetch Latest Tuition Posts (e.g., the first 3)
+        // Using /api/tuitions which will be proxied/routed to the backend URL
+        const tuitionRes = await fetch("/api/tuitions?limit=3");
+        const tuitionData = await tuitionRes.json();
+        setLatestTuitions(tuitionData.result || []);
+
+        // 2. Fetch Featured Tutors (ALL tutors for the marquee)
+        const tutorRes = await fetch("/api/featured-tutors");
+        const tutorData = await tutorRes.json();
+        setFeaturedTutors(tutorData || []);
+        
+      } catch (error) {
+        console.error("Error fetching homepage data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHomeData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-200 overflow-x-hidden font-sans selection:bg-purple-500/30">
@@ -270,7 +176,7 @@ const Home = () => {
       <div className="border-y border-neutral-900 bg-neutral-950/50 backdrop-blur-sm relative overflow-hidden">
         <div className="absolute inset-0 bg-purple-900/5 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
-          {STATS_DATA.map((stat, idx) => (
+          {STATIC_STATS_DATA.map((stat, idx) => (
             <StatItem 
               key={idx} 
               label={stat.label} 
@@ -294,37 +200,43 @@ const Home = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {LATEST_TUITIONS.map((job) => (
-              <motion.div 
-                key={job._id}
-                whileHover={{ y: -5 }}
-                className="group p-6 rounded-2xl bg-neutral-900/30 border border-neutral-800 hover:border-purple-500/30 transition-all duration-300"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-medium">
-                    {job.subject}
-                  </span>
-                  <span className="text-neutral-500 text-xs">{job.postedTime}</span>
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">{job.class}</h3>
-                <div className="space-y-3 text-neutral-400 text-sm mb-6">
-                  <div className="flex items-center gap-2">
-                    <MapPin size={16} className="text-neutral-600" /> {job.location}
+          {loading ? (
+            <div className="flex justify-center p-10"><Loader2 className="animate-spin text-purple-600 h-8 w-8" /></div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {latestTuitions.length > 0 ? latestTuitions.map((job) => (
+                <motion.div 
+                  key={job._id}
+                  whileHover={{ y: -5 }}
+                  className="group p-6 rounded-2xl bg-neutral-900/30 border border-neutral-800 hover:border-purple-500/30 transition-all duration-300"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-medium">
+                      {job.subject}
+                    </span>
+                    <span className="text-neutral-500 text-xs">{new Date(job.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} className="text-neutral-600" /> {job.days}
+                  <h3 className="text-xl font-semibold text-white mb-2">{job.classGrade}</h3>
+                  <div className="space-y-3 text-neutral-400 text-sm mb-6">
+                    <div className="flex items-center gap-2">
+                      <MapPin size={16} className="text-neutral-600" /> {job.location}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock size={16} className="text-neutral-600" /> {job.daysPerWeek}
+                    </div>
+                    <div className="flex items-center gap-2 text-white font-medium">
+                      <DollarSign size={16} className="text-green-500" /> {job.budget} BDT/mo
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-white font-medium">
-                    <DollarSign size={16} className="text-green-500" /> {job.salary} BDT/mo
-                  </div>
-                </div>
-                <Link to={`/tuition/${job._id}`} className="block w-full py-3 text-center rounded-lg bg-neutral-800 text-white group-hover:bg-purple-600 transition-colors">
-                  View Details
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                  <Link to="/tuitions" className="block w-full py-3 text-center rounded-lg bg-neutral-800 text-white group-hover:bg-purple-600 transition-colors">
+                    View Details
+                  </Link>
+                </motion.div>
+              )) : (
+                <p className="col-span-3 text-center text-neutral-500">No approved tuitions available yet. Post one via the Dashboard!</p>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
@@ -385,31 +297,19 @@ const Home = () => {
           <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 z-10 bg-gradient-to-r from-neutral-950 to-transparent pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 z-10 bg-gradient-to-l from-neutral-950 to-transparent pointer-events-none" />
 
-          {/* Scrolling Track */}
-          <div className="flex w-max animate-marquee gap-8 py-4 px-4 hover:pause">
-            
-            {/* Set 1: Original List */}
-            {tutorsOnly.map((tutor) => (
-              <div key={`set1-${tutor.id}`} className="w-[22rem] flex-shrink-0">
-                <TutorCard tutor={tutor} />
-              </div>
-            ))}
-
-            {/* Set 2: Duplicate List for Seamless Loop */}
-            {tutorsOnly.map((tutor) => (
-              <div key={`set2-${tutor.id}`} className="w-[22rem] flex-shrink-0">
-                <TutorCard tutor={tutor} />
-              </div>
-            ))}
-            
-             {/* Set 3: Extra buffer for wide screens if list is short */}
-            {tutorsOnly.length < 5 && tutorsOnly.map((tutor) => (
-              <div key={`set3-${tutor.id}`} className="w-[22rem] flex-shrink-0">
-                <TutorCard tutor={tutor} />
-              </div>
-            ))}
-
-          </div>
+          {loading ? (
+            <div className="flex justify-center p-10"><Loader2 className="animate-spin text-purple-600 h-8 w-8" /></div>
+          ) : (
+            <div className="flex w-max animate-marquee gap-8 py-4 px-4 hover:pause">
+              
+              {/* Ensure seamless loop by duplicating list at least once */}
+              {[...featuredTutors, ...featuredTutors].map((tutor, index) => (
+                <div key={`${tutor.email}-${index}`} className="w-[22rem] flex-shrink-0">
+                  <TutorCard tutor={tutor} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
