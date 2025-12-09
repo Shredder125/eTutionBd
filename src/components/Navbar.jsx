@@ -12,7 +12,8 @@ const NAV_LINKS = [
 ];
 
 const Navbar = () => {
-  const [user, setUser] = useState(true);
+  // CHANGED: Default state is now false (Logged Out)
+  const [user, setUser] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -133,9 +134,12 @@ const Navbar = () => {
           </div>
         ) : (
           <div className="flex items-center gap-2">
+            {/* LOGIN BUTTON: Redirects to /login */}
             <Link to="/login" className="btn btn-ghost btn-sm hidden sm:inline-flex">
               Log In
             </Link>
+            
+            {/* REGISTER BUTTON: Redirects to /register */}
             <Link
               to="/register"
               className="btn btn-primary btn-sm px-6 text-white shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 transition-all duration-300"
@@ -148,8 +152,14 @@ const Navbar = () => {
 
       {/* --- MOBILE MENU --- */}
       {isMobileMenuOpen && (
-        <ul className="lg:hidden mt-2 p-4 bg-base-100 border border-base-200 shadow-2xl rounded-xl flex flex-col gap-3 z-50">
+        <ul className="lg:hidden mt-2 p-4 bg-base-100 border border-base-200 shadow-2xl rounded-xl flex flex-col gap-3 z-50 absolute w-[90%] left-[5%]">
           {renderNavLinks()}
+          {!user && (
+             <li className="mt-2 pt-2 border-t border-base-200 flex flex-col gap-2">
+                <Link to="/login" onClick={closeMenu} className="btn btn-ghost btn-sm w-full">Log In</Link>
+                <Link to="/register" onClick={closeMenu} className="btn btn-primary btn-sm w-full text-white">Register</Link>
+             </li>
+          )}
         </ul>
       )}
     </nav>

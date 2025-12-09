@@ -9,20 +9,104 @@ import {
   Users, 
   CheckCircle, 
   ArrowRight, 
-  Star, 
-  MapPin,
-  Clock,
+  ShieldCheck, 
+  Zap,
   DollarSign,
-  ShieldCheck,
-  Zap
+  MapPin,
+  Clock
 } from "lucide-react";
 
-/* --- MOCK DATA --- */
+// IMPORTANT: Importing the component
+import TutorCard from "../components/TutorCard"; 
+
+/* --- CSS FOR MARQUEE ANIMATION --- */
+const marqueeStyle = `
+  @keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: scroll 40s linear infinite;
+  }
+  .animate-marquee:hover {
+    animation-play-state: paused;
+  }
+`;
+
+/* --- MOCK DATA FOR STATS --- */
 const STATS_DATA = [
   { label: "Active Tutors", val: 5000, suffix: "+" },
   { label: "Happy Students", val: 12000, suffix: "+" },
   { label: "Subjects", val: 50, suffix: "+" },
   { label: "Districts", val: 64, suffix: "" },
+];
+
+/* --- MOCK DATABASE --- */
+const ALL_USERS_DB = [
+  {
+    id: 1,
+    name: "Mark Lopez",
+    email: "mark.lopez@example.com",
+    role: "Tutor",
+    phone: "+1-555-0120",
+    experience: 6,
+    studentEnrollments: 28,
+    tuitionSchedule: [
+      { day: "Mon", startTime: "17:00", endTime: "19:00" },
+      { day: "Wed", startTime: "17:00", endTime: "19:00" },
+      { day: "Fri", startTime: "17:00", endTime: "19:00" }
+    ]
+  },
+  {
+    id: 2,
+    name: "Sarah Jenkins",
+    email: "sarah.j@example.com",
+    role: "Student",
+    phone: "+1-555-0199",
+    experience: 0,
+    studentEnrollments: 0,
+    tuitionSchedule: []
+  },
+  {
+    id: 3,
+    name: "Ayesha Rahman",
+    email: "ayesha.r@example.com",
+    role: "Tutor",
+    phone: "+880-1711-0000",
+    experience: 4,
+    studentEnrollments: 45,
+    tuitionSchedule: [
+      { day: "Sun", startTime: "15:00", endTime: "17:00" },
+      { day: "Tue", startTime: "15:00", endTime: "17:00" }
+    ]
+  },
+  {
+    id: 4,
+    name: "Rahim Uddin",
+    email: "rahim.u@example.com",
+    role: "Tutor",
+    phone: "+880-1811-2222",
+    experience: 8,
+    studentEnrollments: 110,
+    tuitionSchedule: [
+      { day: "Fri", startTime: "10:00", endTime: "12:00" },
+      { day: "Sat", startTime: "10:00", endTime: "12:00" }
+    ]
+  },
+  // Adding a few more dummy tutors to make the marquee look better
+  {
+    id: 5,
+    name: "John Doe",
+    email: "john.d@example.com",
+    role: "Tutor",
+    phone: "+1-555-9999",
+    experience: 12,
+    studentEnrollments: 200,
+    tuitionSchedule: [
+      { day: "Mon", startTime: "14:00", endTime: "16:00" },
+      { day: "Thu", startTime: "14:00", endTime: "16:00" }
+    ]
+  }
 ];
 
 const LATEST_TUITIONS = [
@@ -52,33 +136,6 @@ const LATEST_TUITIONS = [
     salary: "6000",
     days: "3 days/week",
     postedTime: "1 day ago"
-  }
-];
-
-const TOP_TUTORS = [
-  {
-    _id: "101",
-    name: "Ayesha Rahman",
-    subject: "Chemistry Specialist",
-    university: "Dhaka University",
-    rating: 4.9,
-    img: "https://i.pravatar.cc/150?u=a042581f4e29026024d"
-  },
-  {
-    _id: "102",
-    name: "Rahim Uddin",
-    subject: "Math Whiz",
-    university: "BUET",
-    rating: 5.0,
-    img: "https://i.pravatar.cc/150?u=a042581f4e29026704d"
-  },
-  {
-    _id: "103",
-    name: "Sadia Islam",
-    subject: "English Expert",
-    university: "North South",
-    rating: 4.8,
-    img: "https://i.pravatar.cc/150?u=a04258114e29026302d"
   }
 ];
 
@@ -122,7 +179,7 @@ const staggerContainer = {
   }
 };
 
-/* --- SUB-COMPONENT: STAT ITEM (Handles Counting) --- */
+/* --- SUB-COMPONENT: STAT ITEM --- */
 const StatItem = ({ label, val, suffix }) => {
   const { ref, inView } = useInView({
     triggerOnce: true,
@@ -153,12 +210,18 @@ const StatItem = ({ label, val, suffix }) => {
 
 /* --- MAIN PAGE COMPONENT --- */
 const Home = () => {
+  
+  // FILTERING LOGIC: Isolate only tutors
+  const tutorsOnly = ALL_USERS_DB.filter((user) => user.role === "Tutor");
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-200 overflow-x-hidden font-sans selection:bg-purple-500/30">
       
+      {/* INJECT MARQUEE STYLES */}
+      <style>{marqueeStyle}</style>
+
       {/* 1. HERO SECTION */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6">
-        {/* Background Blobs */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-purple-600/20 rounded-full blur-[100px]" />
           <div className="absolute top-40 right-10 w-96 h-96 bg-pink-600/10 rounded-full blur-[120px]" />
@@ -203,7 +266,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 2. STATS BANNER (Animated & Flashy) */}
+      {/* 2. STATS BANNER */}
       <div className="border-y border-neutral-900 bg-neutral-950/50 backdrop-blur-sm relative overflow-hidden">
         <div className="absolute inset-0 bg-purple-900/5 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
@@ -262,12 +325,6 @@ const Home = () => {
               </motion.div>
             ))}
           </div>
-          
-          <div className="mt-8 text-center md:hidden">
-            <Link to="/tuitions" className="inline-flex items-center gap-2 text-purple-400">
-              View All Tuitions <ArrowRight size={16} />
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -298,7 +355,6 @@ const Home = () => {
                 <h3 className="text-xl font-semibold text-white mb-3">{step.title}</h3>
                 <p className="text-neutral-400 leading-relaxed">{step.desc}</p>
                 
-                {/* Connector Line (Desktop Only) */}
                 {idx !== STEPS.length - 1 && (
                   <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-[2px] bg-neutral-800" />
                 )}
@@ -308,10 +364,10 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 5. TOP TUTORS */}
-      <section className="py-24 px-6 bg-neutral-950">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-end mb-12">
+      {/* 5. TOP TUTORS (MARQUEE VERSION) */}
+      <section className="py-24 bg-neutral-950 overflow-hidden relative">
+        <div className="max-w-7xl mx-auto px-6 mb-12">
+          <div className="flex justify-between items-end">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">Featured Tutors</h2>
               <p className="text-neutral-400">Learn from the best minds in the country.</p>
@@ -320,29 +376,39 @@ const Home = () => {
               Find More Tutors <ArrowRight size={16} />
             </Link>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {TOP_TUTORS.map((tutor) => (
-              <div key={tutor._id} className="group relative overflow-hidden rounded-2xl">
-                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/40 to-transparent z-10" />
-                <img 
-                  src={tutor.img} 
-                  alt={tutor.name} 
-                  className="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute bottom-0 left-0 w-full p-6 z-20">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-xl font-bold text-white">{tutor.name}</h3>
-                    <div className="flex items-center gap-1 text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded-lg">
-                      <Star size={14} fill="currentColor" />
-                      <span className="text-xs font-bold">{tutor.rating}</span>
-                    </div>
-                  </div>
-                  <p className="text-purple-400 font-medium text-sm mb-1">{tutor.subject}</p>
-                  <p className="text-neutral-400 text-xs">{tutor.university}</p>
-                </div>
+        {/* MARQUEE CONTAINER */}
+        <div className="relative w-full">
+          
+          {/* Gradient Masks (Fade edges) */}
+          <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 z-10 bg-gradient-to-r from-neutral-950 to-transparent pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 z-10 bg-gradient-to-l from-neutral-950 to-transparent pointer-events-none" />
+
+          {/* Scrolling Track */}
+          <div className="flex w-max animate-marquee gap-8 py-4 px-4 hover:pause">
+            
+            {/* Set 1: Original List */}
+            {tutorsOnly.map((tutor) => (
+              <div key={`set1-${tutor.id}`} className="w-[22rem] flex-shrink-0">
+                <TutorCard tutor={tutor} />
               </div>
             ))}
+
+            {/* Set 2: Duplicate List for Seamless Loop */}
+            {tutorsOnly.map((tutor) => (
+              <div key={`set2-${tutor.id}`} className="w-[22rem] flex-shrink-0">
+                <TutorCard tutor={tutor} />
+              </div>
+            ))}
+            
+             {/* Set 3: Extra buffer for wide screens if list is short */}
+            {tutorsOnly.length < 5 && tutorsOnly.map((tutor) => (
+              <div key={`set3-${tutor.id}`} className="w-[22rem] flex-shrink-0">
+                <TutorCard tutor={tutor} />
+              </div>
+            ))}
+
           </div>
         </div>
       </section>
@@ -375,7 +441,6 @@ const Home = () => {
               </div>
             </div>
             
-            {/* Visual Graphic */}
             <div className="relative h-[500px] rounded-3xl bg-neutral-800 overflow-hidden border border-neutral-700/50">
               <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671&auto=format&fit=crop')] bg-cover bg-center opacity-50" />
               <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent" />
