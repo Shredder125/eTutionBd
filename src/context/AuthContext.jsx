@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
+// ✅ FIXED: Added 'React' to the import
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 

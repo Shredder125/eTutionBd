@@ -1,18 +1,26 @@
-import { createBrowserRouter, Navigate } from "react-router-dom"; // <--- 1. Import Navigate
+import React from "react"; // ✅ FIX: Added React import to prevent "React is not defined" error
+import { createBrowserRouter, Navigate } from "react-router-dom"; 
 import MainLayout from "../layout/MainLayout";
 import DashboardLayout from "../layout/DashboardLayout"; 
 import PrivateRoute from "./PrivateRoute"; 
 
+// Public Pages
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import AllTutors from "../pages/AllTutors";
 import Tuitions from "../pages/Tuitions";
 
+// Dashboard Pages (Student)
 import PostTuition from "../pages/dashboard/PostTuition";
 import MyTuitions from "../pages/dashboard/MyTuitions"; 
 import AppliedTutors from "../pages/dashboard/AppliedTutors"; 
 import UpdateTuition from "../pages/dashboard/UpdateTuition"; 
+import PaymentHistory from "../pages/dashboard/PaymentHistory"; 
+import Payment from "../pages/dashboard/payment/Payment";       
+
+// Dashboard Pages (Admin)
+import ManageTuitions from "../pages/dashboard/admin/ManageTuitions"; // ✅ NEW IMPORT
 
 export const router = createBrowserRouter([
   {
@@ -41,11 +49,12 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      // ✅ 2. ADD THIS LINE: Redirects /dashboard -> /dashboard/post-tuition
+      // Default Redirect
       { 
         index: true, 
         element: <Navigate to="/dashboard/post-tuition" replace /> 
       },
+      // Student Routes
       {
         path: "post-tuition", 
         element: <PostTuition />,
@@ -62,6 +71,19 @@ export const router = createBrowserRouter([
         path: "update-tuition/:id", 
         element: <UpdateTuition />, 
       },
+      {
+        path: "payments", 
+        element: <PaymentHistory />, 
+      },
+      {
+        path: "payment", 
+        element: <Payment />, 
+      },
+      // ✅ NEW: Admin Route
+      {
+        path: "manage-tuitions", 
+        element: <ManageTuitions />, 
+      }
     ],
   },
   {

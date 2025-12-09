@@ -1,23 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useUserAuth } from "../context/AuthContext"; // <--- IMPORT CONTEXT
-import { updateProfile } from "firebase/auth"; // <--- To set the user's name
-import { auth } from "../firebase"; // <--- To access current user
+import { useUserAuth } from "../context/AuthContext"; 
+import { updateProfile } from "firebase/auth"; 
+import { auth } from "../firebase"; 
 import { 
-  User, 
-  Mail, 
-  Lock, 
-  Phone, 
-  Eye, 
-  EyeOff, 
-  Loader2, 
-  ArrowLeft, 
-  Quote, 
-  Star,
-  GraduationCap,
-  BookOpen,
-  AlertCircle // <--- Added for error display
+  User, Mail, Lock, Phone, Eye, EyeOff, Loader2, ArrowLeft, 
+  Quote, Star, GraduationCap, BookOpen, AlertCircle 
 } from "lucide-react";
 
 /* --- MOCK TESTIMONIALS --- */
@@ -57,12 +46,11 @@ const GoogleIcon = ({ className }) => (
 
 const Register = () => {
   const navigate = useNavigate();
-  // Destructure auth functions from context
   const { signUp, googleSignIn } = useUserAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(""); // State for errors
+  const [error, setError] = useState("");
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   // Form State
@@ -71,7 +59,7 @@ const Register = () => {
     email: "",
     phone: "",
     password: "",
-    role: "student",
+    role: "student", // Default role
   });
 
   // Auto-scroll testimonials
@@ -86,10 +74,25 @@ const Register = () => {
   const handleGoogleRegister = async () => {
     try {
       setError("");
-      await googleSignIn();
-      // Google doesn't provide a "Role" or "Phone" by default. 
-      // You usually handle this by checking if the user exists in your DB, 
-      // and if not, creating a document with default values.
+      const result = await googleSignIn();
+      const user = result.user;
+
+      // Save Google User to MongoDB
+      // Note: Google doesn't give us a Phone Number or Role, so we set defaults
+      const userInfo = {
+        name: user.displayName,
+        email: user.email,
+        role: "student", // Defaulting to student for Google Logins
+        photoURL: user.photoURL,
+        phone: "" // Empty phone for google auth
+      };
+
+      await fetch('http://localhost:5000/users', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(userInfo)
+      });
+
       navigate("/");
     } catch (err) {
       console.error(err);
@@ -105,32 +108,42 @@ const Register = () => {
     
     try {
       // 1. Create User in Firebase
-      await signUp(formData.email, formData.password);
+      const result = await signUp(formData.email, formData.password);
+      const user = result.user;
 
-      // 2. Update the "Display Name" in Firebase (because signUp doesn't take a name)
-      if (auth.currentUser) {
-        await updateProfile(auth.currentUser, {
-          displayName: formData.name
-        });
+      // 2. Update Firebase Profile
+      await updateProfile(user, {
+        displayName: formData.name,
+        photoURL: "https://placehold.co/100" // Default placeholder
+      });
+
+      // 3. ✅ SAVE USER TO MONGODB
+      const userInfo = {
+        name: formData.name,
+        email: formData.email,
+        role: formData.role, // Sends the selected role (student/tutor)
+        phone: formData.phone,
+        photoURL: "https://placehold.co/100"
+      };
+
+      const response = await fetch('http://localhost:5000/users', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(userInfo)
+      });
+
+      const data = await response.json();
+
+      if (data.insertedId || data.message === 'user already exists') {
+        navigate("/"); // Redirect to home/dashboard
+      } else {
+        setError("Failed to save user data to database.");
       }
 
-      // 3. (Optional) Send User Data to MongoDB
-      // This is where you would send formData.role and formData.phone to your backend
-      /* await fetch('http://localhost:5000/api/users', {
-         method: 'POST',
-         body: JSON.stringify({ 
-            uid: auth.currentUser.uid, 
-            role: formData.role, 
-            phone: formData.phone 
-         })
-      }); 
-      */
-
-      console.log("User registered successfully");
-      navigate("/"); // Redirect to home/dashboard
     } catch (err) {
       console.error(err);
-      // Format Firebase errors to be user-friendly
       if (err.message.includes("email-already-in-use")) {
         setError("This email is already registered.");
       } else if (err.message.includes("weak-password")) {

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Outlet, NavLink, Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Outlet, NavLink, Link, useNavigate } from "react-router-dom";
 import { 
   BookOpen, 
   PlusCircle, 
@@ -7,25 +7,41 @@ import {
   CreditCard, 
   User, 
   Menu, 
-  X,
-  LogOut
+  LogOut,
+  Shield // Imported Shield Icon for Admin
 } from "lucide-react";
 import { useUserAuth } from "../context/AuthContext";
 
 const DashboardLayout = () => {
   const { user, logOut } = useUserAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate();
 
-  const studentLinks = [
-    { name: "My Tuitions", path: "/dashboard/my-tuitions", icon: <BookOpen size={20} /> },
-    { name: "Post New Tuition", path: "/dashboard/post-tuition", icon: <PlusCircle size={20} /> },
-    { name: "Applied Tutors", path: "/dashboard/applied-tutors", icon: <Users size={20} /> },
-    { name: "Payments", path: "/dashboard/payments", icon: <CreditCard size={20} /> },
-    { name: "Profile", path: "/dashboard/profile", icon: <User size={20} /> },
-  ];
+  // --- CHECK USER ROLE FROM DB ---
+  useEffect(() => {
+    if(user?.email) {
+        const token = localStorage.getItem('access-token');
+        fetch(`http://localhost:5000/users/${user.email}`, {
+            headers: { authorization: `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.role === 'admin') {
+                setIsAdmin(true);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+  }, [user]);
+
+  const handleLogout = async () => {
+    await logOut();
+    navigate('/login');
+  };
 
   return (
-    <div className="min-h-screen bg-base-200">
+    <div className="min-h-screen bg-base-200 font-sans">
       {/* --- SIDEBAR (Fixed Position) --- */}
       <aside 
         className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-base-300 transition-transform duration-300 ease-in-out 
@@ -39,23 +55,50 @@ const DashboardLayout = () => {
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            {studentLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                onClick={() => setIsSidebarOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
-                    isActive 
-                      ? "bg-primary text-white shadow-lg shadow-primary/30" 
-                      : "text-gray-600 hover:bg-base-200 hover:text-primary"
-                  }`
-                }
-              >
-                {link.icon}
-                <span>{link.name}</span>
+            
+            {/* 🛡️ ADMIN SECTION (Only visible if isAdmin is true) */}
+            {isAdmin && (
+              <div className="mb-6">
+                <p className="px-4 text-xs font-bold text-gray-400 uppercase mb-2">Admin Controls</p>
+                <NavLink
+                  to="/dashboard/manage-tuitions"
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
+                      isActive 
+                        ? "bg-red-50 text-red-600 shadow-sm border border-red-100" 
+                        : "text-gray-600 hover:bg-gray-50 hover:text-red-600"
+                    }`
+                  }
+                >
+                  <Shield size={20} />
+                  <span>Manage Tuitions</span>
+                </NavLink>
+                <div className="divider my-2"></div>
+              </div>
+            )}
+
+            {/* 🎓 STUDENT SECTION */}
+            <div>
+              <p className="px-4 text-xs font-bold text-gray-400 uppercase mb-2">Student Menu</p>
+              
+              <NavLink to="/dashboard/post-tuition" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
+                <PlusCircle size={20} /> Post Tuition
               </NavLink>
-            ))}
+              
+              <NavLink to="/dashboard/my-tuitions" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
+                <BookOpen size={20} /> My Tuitions
+              </NavLink>
+              
+              <NavLink to="/dashboard/applied-tutors" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
+                <Users size={20} /> Applied Tutors
+              </NavLink>
+              
+              <NavLink to="/dashboard/payments" onClick={() => setIsSidebarOpen(false)} className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${isActive ? "bg-primary/10 text-primary" : "text-gray-600 hover:bg-gray-100"}`}>
+                <CreditCard size={20} /> Payments
+              </NavLink>
+            </div>
+
           </nav>
 
           {/* User Footer */}
@@ -67,12 +110,12 @@ const DashboardLayout = () => {
                 </div>
               </div>
               <div className="overflow-hidden">
-                <p className="font-bold text-sm truncate text-gray-800">{user?.displayName || "Student"}</p>
-                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                <p className="font-bold text-sm truncate text-gray-800">{user?.displayName || "User"}</p>
+                <p className="text-xs text-gray-500 truncate">{isAdmin ? "Administrator" : "Student"}</p>
               </div>
             </div>
             <button 
-              onClick={() => logOut()} 
+              onClick={handleLogout} 
               className="btn btn-outline btn-error btn-sm w-full flex items-center gap-2"
             >
               <LogOut size={16} /> Logout
@@ -82,7 +125,6 @@ const DashboardLayout = () => {
       </aside>
 
       {/* --- MAIN CONTENT WRAPPER --- */}
-      {/* lg:ml-64 creates the space for the sidebar on desktop */}
       <div className="lg:ml-64 min-h-screen flex flex-col">
         
         {/* Mobile Header */}
