@@ -8,7 +8,8 @@ import {
   User, 
   Menu, 
   LogOut,
-  Shield // Imported Shield Icon for Admin
+  Shield, 
+  TrendingUp // ✅ NEW ICON
 } from "lucide-react";
 import { useUserAuth } from "../context/AuthContext";
 
@@ -18,7 +19,6 @@ const DashboardLayout = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
-  // --- CHECK USER ROLE FROM DB ---
   useEffect(() => {
     if(user?.email) {
         const token = localStorage.getItem('access-token');
@@ -42,24 +42,22 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen bg-base-200 font-sans">
-      {/* --- SIDEBAR (Fixed Position) --- */}
       <aside 
         className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-base-300 transition-transform duration-300 ease-in-out 
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       >
         <div className="h-full flex flex-col">
-          {/* Header */}
           <div className="h-16 flex items-center justify-center border-b border-base-300 bg-primary/5">
             <Link to="/" className="text-xl font-bold text-primary tracking-tight">eTuitionBd</Link>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
             
-            {/* 🛡️ ADMIN SECTION (Only visible if isAdmin is true) */}
+            {/* 🛡️ ADMIN SECTION */}
             {isAdmin && (
               <div className="mb-6">
                 <p className="px-4 text-xs font-bold text-gray-400 uppercase mb-2">Admin Controls</p>
+                
                 <NavLink
                   to="/dashboard/manage-tuitions"
                   onClick={() => setIsSidebarOpen(false)}
@@ -74,6 +72,38 @@ const DashboardLayout = () => {
                   <Shield size={20} />
                   <span>Manage Tuitions</span>
                 </NavLink>
+
+                <NavLink
+                  to="/dashboard/manage-users"
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
+                      isActive 
+                        ? "bg-blue-50 text-blue-600 shadow-sm border border-blue-100" 
+                        : "text-gray-600 hover:bg-gray-50 hover:text-blue-600"
+                    }`
+                  }
+                >
+                  <Users size={20} />
+                  <span>Manage Users</span>
+                </NavLink>
+
+                {/* ✅ NEW: Reports & Analytics */}
+                <NavLink
+                  to="/dashboard/admin-stats"
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
+                      isActive 
+                        ? "bg-purple-50 text-purple-600 shadow-sm border border-purple-100" 
+                        : "text-gray-600 hover:bg-gray-50 hover:text-purple-600"
+                    }`
+                  }
+                >
+                  <TrendingUp size={20} />
+                  <span>Reports & Analytics</span>
+                </NavLink>
+
                 <div className="divider my-2"></div>
               </div>
             )}
@@ -101,7 +131,6 @@ const DashboardLayout = () => {
 
           </nav>
 
-          {/* User Footer */}
           <div className="p-4 border-t border-base-300 bg-base-50">
             <div className="flex items-center gap-3 mb-4">
               <div className="avatar">
@@ -124,10 +153,7 @@ const DashboardLayout = () => {
         </div>
       </aside>
 
-      {/* --- MAIN CONTENT WRAPPER --- */}
       <div className="lg:ml-64 min-h-screen flex flex-col">
-        
-        {/* Mobile Header */}
         <header className="lg:hidden h-16 bg-white border-b border-base-300 flex items-center justify-between px-4 sticky top-0 z-40">
           <span className="font-bold text-lg text-gray-700">Dashboard</span>
           <button onClick={() => setIsSidebarOpen(true)} className="btn btn-ghost btn-circle">
@@ -135,13 +161,11 @@ const DashboardLayout = () => {
           </button>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
           <Outlet /> 
         </main>
       </div>
 
-      {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm"
