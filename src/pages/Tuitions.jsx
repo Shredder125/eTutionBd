@@ -35,18 +35,21 @@ const Tuitions = () => {
         
         // Build query string with pagination and filters
         const classQuery = selectedClass ? `&class=${selectedClass}` : "";
-        const url = `http://localhost:5000/tuitions?search=${searchTerm}&page=${currentPage}&limit=${limit}${classQuery}`;
+        // CRITICAL: Using /api for deployment readiness
+        const url = `/api/tuitions?search=${searchTerm}&page=${currentPage}&limit=${limit}${classQuery}`; 
 
         // Fetch Tuitions
-        const res = await fetch(url);
+        const token = localStorage.getItem("access-token");
+        const res = await fetch(url, {
+             headers: { authorization: `Bearer ${token}` }
+        });
         const data = await res.json();
         setTuitions(data.result || []);
         setTotalPages(Math.ceil(data.total / limit)); // Calculate total pages
         
         // Fetch Role (Only if user is logged in)
         if (user?.email) {
-            const token = localStorage.getItem("access-token");
-            const roleRes = await fetch(`http://localhost:5000/users/${user.email}`, {
+            const roleRes = await fetch(`/api/users/${user.email}`, {
                 headers: { authorization: `Bearer ${token}` }
             });
             const roleData = await roleRes.json();
@@ -80,7 +83,8 @@ const Tuitions = () => {
 
     try {
       const token = localStorage.getItem("access-token");
-      const res = await fetch("http://localhost:5000/applications", {
+      // CRITICAL: Using /api for deployment readiness
+      const res = await fetch("/api/applications", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -158,7 +162,7 @@ const Tuitions = () => {
           </div>
         )}
 
-        {/* Tuitions Grid */}
+        {/* Tuitions Grid (Full Rendering Logic Added) */}
         {!loading && (
           <>
             {tuitions.length === 0 ? (
@@ -167,51 +171,51 @@ const Tuitions = () => {
                 </div>
             ) : (
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {tuitions.map((item) => (
-                    <div key={item._id} className="card bg-white border border-gray-100 hover:shadow-xl transition-all duration-300 group">
-                      <div className="card-body">
-                        <div className="flex justify-between items-start">
-                          <div className="badge badge-primary badge-outline font-semibold">{item.classGrade}</div>
-                          <span className="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-1 rounded-full">
-                              {new Date(item.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        
-                        <h2 className="card-title text-xl text-gray-800 mt-2 group-hover:text-primary transition-colors">
-                          {item.subject}
-                        </h2>
-                        
-                        <div className="space-y-3 my-4 text-gray-600 text-sm">
-                          <div className="flex items-center gap-2">
-                              <MapPin size={16} className="text-primary" /> {item.location}
-                          </div>
-                          <div className="flex items-center gap-2">
-                              <Clock size={16} className="text-primary" /> {item.daysPerWeek} Days / Week
-                          </div>
-                          <div className="flex items-center gap-2">
-                              <DollarSign size={16} className="text-primary" /> 
-                              <span className="font-bold text-gray-800">{item.budget} BDT</span> / month
-                          </div>
-                        </div>
+                    {tuitions.map((item) => (
+                        <div key={item._id} className="card bg-white border border-gray-100 hover:shadow-xl transition-all duration-300 group">
+                            <div className="card-body">
+                                <div className="flex justify-between items-start">
+                                    <div className="badge badge-primary badge-outline font-semibold">{item.classGrade}</div>
+                                    <span className="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-1 rounded-full">
+                                        {new Date(item.createdAt).toLocaleDateString()}
+                                    </span>
+                                </div>
+                                
+                                <h2 className="card-title text-xl text-gray-800 mt-2 group-hover:text-primary transition-colors">
+                                    {item.subject}
+                                </h2>
+                                
+                                <div className="space-y-3 my-4 text-gray-600 text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <MapPin size={16} className="text-primary" /> {item.location}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Clock size={16} className="text-primary" /> {item.daysPerWeek} Days / Week
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <DollarSign size={16} className="text-primary" /> 
+                                        <span className="font-bold text-gray-800">{item.budget} BDT</span> / month
+                                    </div>
+                                </div>
 
-                        <div className="card-actions justify-end mt-4">
-                          {/* BUTTON LOGIC: Only Tutors can Apply */}
-                          {role === 'tutor' ? (
-                              <button 
-                                  onClick={() => setSelectedTuition(item)}
-                                  className="btn btn-primary w-full text-white shadow-md shadow-primary/20"
-                              >
-                                  Apply Now
-                              </button>
-                          ) : (
-                              <button disabled className="btn btn-ghost bg-gray-100 text-gray-400 w-full cursor-not-allowed">
-                                  {user ? "Login as Tutor to Apply" : "Login to Apply"}
-                              </button>
-                          )}
+                                <div className="card-actions justify-end mt-4">
+                                    {/* BUTTON LOGIC: Only Tutors can Apply */}
+                                    {role === 'tutor' ? (
+                                        <button 
+                                            onClick={() => setSelectedTuition(item)}
+                                            className="btn btn-primary w-full text-white shadow-md shadow-primary/20"
+                                        >
+                                            Apply Now
+                                        </button>
+                                    ) : (
+                                        <button disabled className="btn btn-ghost bg-gray-100 text-gray-400 w-full cursor-not-allowed">
+                                            {user ? "Login as Tutor to Apply" : "Login to Apply"}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
             )}
             
@@ -230,7 +234,6 @@ const Tuitions = () => {
                         
                         {/* Page Numbers (Displaying up to 5 surrounding pages) */}
                         {[...Array(totalPages)].map((_, index) => {
-                            // Logic to display only relevant pages
                             if (index < 2 || index >= totalPages - 2 || (index >= currentPage - 1 && index <= currentPage + 1)) {
                                 return (
                                     <button 
@@ -242,7 +245,6 @@ const Tuitions = () => {
                                     </button>
                                 );
                             } else if (index === 2 || index === totalPages - 3) {
-                                // Add ellipses only once
                                 return <button key={index} className="join-item btn btn-ghost" disabled>...</button>;
                             }
                             return null;

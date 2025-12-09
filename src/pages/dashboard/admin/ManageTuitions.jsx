@@ -11,7 +11,8 @@ const ManageTuitions = () => {
   const fetchAllTuitions = async () => {
     try {
       const token = localStorage.getItem("access-token");
-      const res = await fetch("http://localhost:5000/tuitions/admin/all", {
+      // FIX 1: Replace localhost URL with /api
+      const res = await fetch("/api/tuitions/admin/all", {
         headers: { authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -35,7 +36,8 @@ const ManageTuitions = () => {
   const handleStatusChange = async (id, newStatus) => {
     try {
       const token = localStorage.getItem("access-token");
-      const res = await fetch(`http://localhost:5000/tuitions/status/${id}`, {
+      // FIX 2: Replace localhost URL with /api
+      const res = await fetch(`/api/tuitions/status/${id}`, {
         method: "PATCH",
         headers: {
           "content-type": "application/json",
