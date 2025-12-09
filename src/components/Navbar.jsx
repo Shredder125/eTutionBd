@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useUserAuth } from "../context/AuthContext"; // <--- 1. Import Context
 import { Menu, X, User, Settings, LogOut, LayoutDashboard } from "lucide-react";
 
 // --- NAV LINKS ---
@@ -12,8 +13,10 @@ const NAV_LINKS = [
 ];
 
 const Navbar = () => {
-  // CHANGED: Default state is now false (Logged Out)
-  const [user, setUser] = useState(false);
+  // 2. Get real user and logout function from Context
+  const { user, logOut } = useUserAuth(); 
+  const navigate = useNavigate();
+
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -26,6 +29,16 @@ const Navbar = () => {
 
   // Close mobile menu on link click
   const closeMenu = () => setIsMobileMenuOpen(false);
+
+  // 3. Handle Real Logout
+  const handleLogout = async () => {
+    try {
+      await logOut();
+      navigate("/login"); // Optional: Redirect to login after logout
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
 
   // Render nav links
   const renderNavLinks = () =>
@@ -83,8 +96,9 @@ const Navbar = () => {
         {/* --- CENTER: DESKTOP LINKS --- */}
         <ul className="hidden lg:flex gap-8 text-[15px]">{renderNavLinks()}</ul>
 
-        {/* --- RIGHT: AUTH --- */}
+        {/* --- RIGHT: AUTHENTICATION LOGIC --- */}
         {user ? (
+          /* STATE 1: USER IS LOGGED IN */
           <div className="flex items-center gap-3">
             {/* Dashboard Link */}
             <Link
@@ -102,14 +116,17 @@ const Navbar = () => {
                 className="btn btn-ghost btn-circle avatar ring ring-primary/10 hover:ring-primary transition-all duration-300"
               >
                 <div className="w-10 rounded-full overflow-hidden">
+                  {/* Use Firebase Photo URL or Fallback */}
                   <img
                     alt="User Avatar"
-                    src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                    src={user.photoURL || "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"}
                   />
                 </div>
               </button>
               <ul className="dropdown-content mt-3 p-2 shadow-2xl menu menu-sm bg-base-100 rounded-box w-56 gap-1 border border-base-200">
-                <li className="menu-title px-4 py-2">My Account</li>
+                <li className="menu-title px-4 py-2">
+                  {user.displayName || "My Account"}
+                </li>
                 <li>
                   <Link to="/profile" className="py-2 flex gap-3">
                     <User size={16} /> Profile
@@ -123,7 +140,7 @@ const Navbar = () => {
                 <div className="divider my-0"></div>
                 <li>
                   <button
-                    onClick={() => setUser(false)}
+                    onClick={handleLogout} // Calls the actual logout function
                     className="py-2 text-error hover:bg-error/10 flex gap-3"
                   >
                     <LogOut size={16} /> Logout
@@ -133,13 +150,12 @@ const Navbar = () => {
             </div>
           </div>
         ) : (
+          /* STATE 2: USER IS LOGGED OUT */
           <div className="flex items-center gap-2">
-            {/* LOGIN BUTTON: Redirects to /login */}
             <Link to="/login" className="btn btn-ghost btn-sm hidden sm:inline-flex">
               Log In
             </Link>
             
-            {/* REGISTER BUTTON: Redirects to /register */}
             <Link
               to="/register"
               className="btn btn-primary btn-sm px-6 text-white shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 transition-all duration-300"
@@ -154,6 +170,17 @@ const Navbar = () => {
       {isMobileMenuOpen && (
         <ul className="lg:hidden mt-2 p-4 bg-base-100 border border-base-200 shadow-2xl rounded-xl flex flex-col gap-3 z-50 absolute w-[90%] left-[5%]">
           {renderNavLinks()}
+          
+          {/* Mobile Dashboard Link (Only if logged in) */}
+          {user && (
+             <li>
+               <Link to="/dashboard" onClick={closeMenu} className="flex items-center gap-2 py-2 font-medium text-primary">
+                 <LayoutDashboard size={18} /> Dashboard
+               </Link>
+             </li>
+          )}
+
+          {/* Mobile Auth Buttons (Only if logged out) */}
           {!user && (
              <li className="mt-2 pt-2 border-t border-base-200 flex flex-col gap-2">
                 <Link to="/login" onClick={closeMenu} className="btn btn-ghost btn-sm w-full">Log In</Link>

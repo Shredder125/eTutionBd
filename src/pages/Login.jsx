@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, Star, Quote } from "lucide-react";
+import { useUserAuth } from "../context/AuthContext"; // <--- IMPORT CONTEXT
+import { 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  Loader2, 
+  ArrowLeft, 
+  Star, 
+  Quote, 
+  AlertCircle // <--- Added for error display
+} from "lucide-react";
 
 /* --- MOCK TESTIMONIALS DATA --- */
 const TESTIMONIALS = [
@@ -39,70 +50,27 @@ const TESTIMONIALS = [
     name: "Nusrat Jahan",
     role: "English Tutor",
     img: "https://i.pravatar.cc/150?u=a04258114e29026302d"
-  },
-  {
-    id: 6,
-    text: "I improved my IELTS score significantly thanks to the expert tutor I found here.",
-    name: "Tanvir Ahmed",
-    role: "Student",
-    img: "https://i.pravatar.cc/150?u=a042581f4e29026011d"
-  },
-  {
-    id: 7,
-    text: "Managing 5 different tuitions was a headache until I started using this dashboard.",
-    name: "Priya Das",
-    role: "Biology Tutor",
-    img: "https://i.pravatar.cc/150?u=2042581f4e29026704d"
-  },
-  {
-    id: 8,
-    text: "Great interface and very responsive support team. Best tuition media in Dhaka right now.",
-    name: "Mohammad Ali",
-    role: "Guardian",
-    img: "https://i.pravatar.cc/150?u=1042581f4e29026704d"
-  },
-  {
-    id: 9,
-    text: "The 'Verified Tutor' badge really helps us trust the teachers coming into our home.",
-    name: "Salma Begum",
-    role: "Parent",
-    img: "https://i.pravatar.cc/150?u=a042581f4e29026709d"
-  },
-  {
-    id: 10,
-    text: "I've been teaching here for 6 months. Consistent leads and professional environment.",
-    name: "Arafat Rahman",
-    role: "Physics Tutor",
-    img: "https://i.pravatar.cc/150?u=a042581f4e29026708d"
   }
 ];
 
 // Google Logo Component
 const GoogleIcon = ({ className }) => (
   <svg viewBox="0 0 24 24" className={className}>
-    <path
-      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-      fill="#4285F4"
-    />
-    <path
-      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-      fill="#34A853"
-    />
-    <path
-      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-      fill="#FBBC05"
-    />
-    <path
-      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-      fill="#EA4335"
-    />
+    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
   </svg>
 );
 
 const Login = () => {
   const navigate = useNavigate();
+  // Destructure login functions from context
+  const { logIn, googleSignIn } = useUserAuth();
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); // State to store error messages
   const [formData, setFormData] = useState({ email: "", password: "" });
   
   // Carousel State
@@ -112,21 +80,41 @@ const Login = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTestimonial((prev) => (prev + 1) % TESTIMONIALS.length);
-    }, 5000); // Change every 5 seconds
+    }, 5000); 
     return () => clearInterval(timer);
   }, []);
 
-  const handleGoogleLogin = () => {
-    console.log("Google Login Clicked");
+  // --- GOOGLE LOGIN LOGIC ---
+  const handleGoogleLogin = async () => {
+    try {
+      setError("");
+      await googleSignIn();
+      navigate("/"); // Redirect to home/dashboard
+    } catch (err) {
+      console.error(err);
+      setError("Failed to sign in with Google.");
+    }
   };
 
+  // --- EMAIL/PASS LOGIN LOGIC ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    setTimeout(() => {
+    
+    try {
+      await logIn(formData.email, formData.password);
+      navigate("/"); // Redirect to home/dashboard
+    } catch (err) {
+      console.error(err);
+      // Clean up Firebase error message
+      const errorMessage = err.message.includes("auth/invalid-credential") 
+        ? "Invalid email or password." 
+        : err.message.replace("Firebase: ", "");
+      setError(errorMessage);
+    } finally {
       setLoading(false);
-      navigate("/");
-    }, 2000);
+    }
   };
 
   return (
@@ -233,6 +221,7 @@ const Login = () => {
           </div>
 
           <button 
+            type="button"
             onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-3 bg-white text-neutral-900 font-semibold py-3 px-4 rounded-xl hover:bg-neutral-200 transition-all duration-200 transform hover:scale-[1.01]"
           >
@@ -248,6 +237,13 @@ const Login = () => {
               <span className="bg-neutral-950 px-2 text-neutral-500">Or continue with email</span>
             </div>
           </div>
+
+          {/* --- ERROR DISPLAY --- */}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-lg flex items-center gap-2 text-sm animate-pulse">
+              <AlertCircle size={16} /> {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1">
