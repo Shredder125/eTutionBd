@@ -11,6 +11,13 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-body {
-  font-family: 'Inter', sans-serif;
+
+.inter-font {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+.dashboard-container {
+  font-family: "Poppins", sans-serif;
 }
