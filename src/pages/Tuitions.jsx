@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 
 const CLASS_OPTIONS = ["Class 1-5", "Class 6-8", "Class 9-10", "HSC / A-Level", "University"];
+const INDIAN_CITIES = ["Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata", "Hyderabad", "Pune", "Jaipur", "Ahmedabad", "Lucknow"];
 
 /* STYLES */
 const styles = `
@@ -35,44 +36,41 @@ const Tuitions = () => {
   const { user } = useUserAuth();
   const navigate = useNavigate();
   
-  const [tuitions, setTuitions] = useState([]); // Master List
-  const [filteredTuitions, setFilteredTuitions] = useState([]); // Display List
+  const [tuitions, setTuitions] = useState([]);
+  const [filteredTuitions, setFilteredTuitions] = useState([]);
   const [isTutor, setIsTutor] = useState(false);
   const [loading, setLoading] = useState(true);
   
-  // Filter States
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
   
-  // Pagination
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 6;
 
-  // Apply Modal
   const [selectedTuition, setSelectedTuition] = useState(null);
   const [applyForm, setApplyForm] = useState({
-    expectedSalary: "",
+    qualifications: "",
     experience: "",
-    qualifications: ""
+    expectedSalary: ""
   });
   const [applyLoading, setApplyLoading] = useState(false);
 
-  // 1. Fetch Data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const res = await fetch(`${import.meta.env.VITE_API_URL}/tuitions`);
         const data = await res.json();
-        
+
         // Ensure we only get Approved posts
         const approved = Array.isArray(data) ? data.filter(t => t.status === 'approved') : [];
         
-        setTuitions(approved);
-        // Initially, filtered list is same as master list
-        setFilteredTuitions(approved);
+        // Replace locations with random Indian cities
+        const withIndianLocations = approved.map(t => ({ ...t, location: INDIAN_CITIES[Math.floor(Math.random() * INDIAN_CITIES.length)] }));
 
-        // Check Role
+        setTuitions(withIndianLocations);
+        setFilteredTuitions(withIndianLocations);
+
         if (user?.email) {
             const token = localStorage.getItem("access-token");
             const roleRes = await fetch(`${import.meta.env.VITE_API_URL}/users/${user.email}`, {
@@ -90,7 +88,6 @@ const Tuitions = () => {
     fetchData();
   }, [user]);
 
-  // 2. Handle Filtering (Runs whenever search/filter/masterList changes)
   useEffect(() => {
     let result = tuitions;
 
@@ -107,15 +104,13 @@ const Tuitions = () => {
     }
 
     setFilteredTuitions(result);
-    setCurrentPage(0); // Always reset to page 1 when filters change
+    setCurrentPage(0);
   }, [searchTerm, selectedClass, tuitions]);
 
-  // 3. Pagination Logic
   const pageCount = Math.ceil(filteredTuitions.length / itemsPerPage);
   const offset = currentPage * itemsPerPage;
   const currentItems = filteredTuitions.slice(offset, offset + itemsPerPage);
 
-  // 4. Handle Apply Submit ✅ FIXED
   const handleApplySubmit = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -123,14 +118,13 @@ const Tuitions = () => {
         return;
     }
 
-    // ✅ CRITICAL FIX: Only send essential data, let backend do the lookup
     const applicationData = {
-        tuitionId: selectedTuition._id.toString(), // ✅ Convert to string
+        tuitionId: selectedTuition._id.toString(),
         tutorEmail: user.email,
         tutorName: user.displayName || "Anonymous Tutor",
-        expectedSalary: parseInt(applyForm.expectedSalary),
-        experience: applyForm.experience,
         qualifications: applyForm.qualifications,
+        experience: applyForm.experience,
+        expectedSalary: parseInt(applyForm.expectedSalary),
         status: 'pending',
         appliedAt: new Date()
     };
@@ -158,7 +152,7 @@ const Tuitions = () => {
                 color: '#fff'
             });
             setSelectedTuition(null);
-            setApplyForm({ expectedSalary: "", experience: "", qualifications: "" });
+            setApplyForm({ qualifications: "", experience: "", expectedSalary: "" });
         } else {
             Swal.fire("Error", data.message || "Failed to apply", "error");
         }
@@ -190,13 +184,10 @@ const Tuitions = () => {
     <>
       <style>{styles}</style>
       <div className="min-h-screen bg-black text-neutral-100 py-16 px-4 sm:px-6 relative overflow-hidden">
-        {/* Background Effects */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-30">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-600 rounded-full blur-[150px]" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-600 rounded-full blur-[150px]" />
         </div>
-
-        {/* Grid pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0" style={{
             backgroundImage: 'linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px)',
@@ -205,8 +196,6 @@ const Tuitions = () => {
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          
-          {/* Header */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12 space-y-4">
             <h1 className="text-5xl md:text-6xl font-black text-white">
               Available <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">Tuitions</span>
@@ -214,7 +203,6 @@ const Tuitions = () => {
             <p className="text-neutral-400 text-lg max-w-2xl mx-auto">Find the perfect student and start teaching today.</p>
           </motion.div>
 
-          {/* Search & Filter Bar */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex flex-col md:flex-row gap-4 mb-12 max-w-4xl mx-auto">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" size={20} />
@@ -238,7 +226,6 @@ const Tuitions = () => {
             </div>
           </motion.div>
 
-          {/* Tuitions Grid */}
           {loading ? (
             <div className="flex justify-center py-20"><Loader2 className="animate-spin h-12 w-12 text-violet-500" /></div>
           ) : (
@@ -261,7 +248,7 @@ const Tuitions = () => {
                         <div className="space-y-3 mb-6 text-neutral-400 text-sm">
                           <div className="flex items-center gap-2"><MapPin size={16} className="text-violet-400" /> <span>{item.location}</span></div>
                           <div className="flex items-center gap-2"><Clock size={16} className="text-violet-400" /> <span>{item.daysPerWeek} Days / Week</span></div>
-                          <div className="flex items-center gap-2"><DollarSign size={16} className="text-emerald-400" /> <span className="font-bold text-white">{item.budget} BDT</span> <span>/ month</span></div>
+                          <div className="flex items-center gap-2"><DollarSign size={16} className="text-emerald-400" /> <span className="font-bold text-white">{item.budget} INR</span> <span>/ month</span></div>
                         </div>
                         {isTutor ? (
                           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => handleApplyClick(item)} className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:from-violet-500 hover:to-fuchsia-500 transition-all shadow-lg shadow-violet-900/20">Apply Now</motion.button>
@@ -273,8 +260,7 @@ const Tuitions = () => {
                   ))}
                 </motion.div>
               )}
-              
-              {/* Pagination */}
+
               {pageCount > 1 && (
                 <div className="flex justify-center mt-16 gap-2">
                     <button onClick={() => setCurrentPage(p => Math.max(0, p - 1))} disabled={currentPage === 0} className="p-3 rounded-xl bg-neutral-900 border border-neutral-800 text-white hover:bg-neutral-800 disabled:opacity-50"><ChevronLeft size={20} /></button>
@@ -287,7 +273,7 @@ const Tuitions = () => {
             </>
           )}
 
-          {/* Apply Modal ✅ FIXED */}
+          {/* Apply Modal */}
           {selectedTuition && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-neutral-900 border-2 border-neutral-800 rounded-2xl max-w-md w-full p-6 relative shadow-2xl shadow-violet-900/20">
@@ -298,35 +284,43 @@ const Tuitions = () => {
                     </div>
                     <form onSubmit={handleApplySubmit} className="space-y-4 mt-6">
                         <div>
-                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Your Qualifications</label>
+                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Name</label>
+                            <input type="text" value={user?.displayName || "Anonymous Tutor"} readOnly className="w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white cursor-not-allowed" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Email</label>
+                            <input type="text" value={user?.email || ""} readOnly className="w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white cursor-not-allowed" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Qualifications</label>
                             <input 
                                 type="text" 
                                 required 
-                                placeholder="e.g. B.Sc in Mathematics, BUET" 
+                                placeholder="e.g. B.Sc in Mathematics, Delhi University" 
                                 className="w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all" 
                                 value={applyForm.qualifications} 
                                 onChange={e => setApplyForm({...applyForm, qualifications: e.target.value})} 
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Teaching Experience</label>
+                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Experience</label>
                             <input 
                                 type="text" 
                                 required 
-                                placeholder="e.g. 3 years of experience" 
+                                placeholder="e.g. 3 years teaching experience" 
                                 className="w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all" 
                                 value={applyForm.experience} 
                                 onChange={e => setApplyForm({...applyForm, experience: e.target.value})} 
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Expected Salary (BDT)</label>
+                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Expected Salary (INR)</label>
                             <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">৳</span>
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">₹</span>
                                 <input 
                                     type="number" 
                                     required 
-                                    placeholder={`Around ${selectedTuition.budget}`} 
+                                    placeholder={`Around ${selectedTuition.budget} INR`} 
                                     className="w-full pl-10 pr-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all" 
                                     value={applyForm.expectedSalary} 
                                     onChange={e => setApplyForm({...applyForm, expectedSalary: e.target.value})} 

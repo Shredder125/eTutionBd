@@ -27,6 +27,7 @@ import ManageUsers from "../pages/dashboard/admin/ManageUsers";
 import AdminStats from "../pages/dashboard/admin/AdminStats";
 
 import MyApplications from "../pages/dashboard/tutor/MyApplications";
+import UpdateApplication from "../pages/dashboard/tutor/UpdateApplication"; // <-- NEW
 import TutorRevenue from "../pages/dashboard/tutor/TutorRevenue";
 import OngoingTuitions from "../pages/dashboard/tutor/OngoingTuitions"; 
 
@@ -41,34 +42,13 @@ export const router = createBrowserRouter([
     ),
     errorElement: <div className="h-screen bg-black text-white flex items-center justify-center">404 - Page Not Found</div>,
     children: [
-      {
-        path: "/",
-        element: <Home />,
-      },
-      {
-        path: "/tutors",
-        element: <AllTutors />,
-      },
-      {
-        path: "/tuitions",
-        element: <Tuitions />,
-      },
-      {
-        path: "/tuition/:id",
-        element: <TuitionDetails />,
-      },
-      {
-        path: "/tutor/:id",
-        element: <TutorProfile />,
-      },
-      {
-        path: "/about",
-        element: <About />, 
-      },
-      {
-        path: "/contact",
-        element: <Contact />, 
-      },
+      { path: "/", element: <Home /> },
+      { path: "/tutors", element: <AllTutors /> },
+      { path: "/tuitions", element: <Tuitions /> },
+      { path: "/tuition/:id", element: <TuitionDetails /> },
+      { path: "/tutor/:id", element: <TutorProfile /> },
+      { path: "/about", element: <About /> },
+      { path: "/contact", element: <Contact /> },
     ],
   },
   {
@@ -82,62 +62,21 @@ export const router = createBrowserRouter([
       </>
     ),
     children: [
-      { 
-        index: true, 
-        element: <Navigate to="/dashboard/post-tuition" replace /> 
-      },
-      {
-        path: "post-tuition", 
-        element: <PostTuition />,
-      },
-      {
-        path: "my-tuitions", 
-        element: <MyTuitions />,
-      },
-      {
-        path: "applied-tutors", 
-        element: <AppliedTutors />, 
-      },
-      {
-        path: "update-tuition/:id", 
-        element: <UpdateTuition />, 
-      },
-      {
-        path: "payments", 
-        element: <PaymentHistory />, 
-      },
-      {
-        path: "payment", 
-        element: <Payment />, 
-      },
-      {
-        path: "manage-tuitions", 
-        element: <ManageTuitions />, 
-      },
-      {
-        path: "manage-users", 
-        element: <ManageUsers />, 
-      },
-      {
-        path: "admin-stats", 
-        element: <AdminStats />, 
-      },
-      {
-        path: "my-applications", 
-        element: <MyApplications />, 
-      },
-      {
-        path: "ongoing-tuitions",
-        element: <OngoingTuitions />,
-      },
-      {
-        path: "my-revenue", 
-        element: <TutorRevenue />, 
-      },
-      {
-        path: "profile", 
-        element: <Profile />, 
-      }
+      { index: true, element: <Navigate to="/dashboard/post-tuition" replace /> },
+      { path: "post-tuition", element: <PostTuition /> },
+      { path: "my-tuitions", element: <MyTuitions /> },
+      { path: "applied-tutors", element: <AppliedTutors /> },
+      { path: "update-tuition/:id", element: <UpdateTuition /> },
+      { path: "update-application/:id", element: <UpdateApplication /> }, // <-- NEW
+      { path: "payments", element: <PaymentHistory /> },
+      { path: "payment", element: <Payment /> },
+      { path: "manage-tuitions", element: <ManageTuitions /> },
+      { path: "manage-users", element: <ManageUsers /> },
+      { path: "admin-stats", element: <AdminStats /> },
+      { path: "my-applications", element: <MyApplications /> },
+      { path: "ongoing-tuitions", element: <OngoingTuitions /> },
+      { path: "my-revenue", element: <TutorRevenue /> },
+      { path: "profile", element: <Profile /> },
     ],
   },
   {
