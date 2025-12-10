@@ -46,7 +46,7 @@ The project uses a modern development environment powered by **Vite** and relies
 | **sweetalert2** | Custom, engaging modals for confirmations (Delete, Reject, etc.). |
 | **@stripe/react-stripe-js** | React components for Stripe Elements (UI). |
 | **@stripe/stripe-js** | Loads the Stripe.js library (payment processing). |
-| *Other essentials* | **localforage**, **match-sorter**, **sort-by**, **react-intersection-observer**, **react-hook-form** |
+| *Other essentials* | **localforage**, **match-sorter**, **sort-by**, **react-intersection-observer**, **react-hook-form** **clsx** **tailwind-merge** **react-countup**|
 
 ### 🌐 Server Dependencies (Backend)
 

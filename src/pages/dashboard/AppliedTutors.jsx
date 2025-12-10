@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useUserAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom"; // <--- 1. Import useNavigate
-import { Check, X, User, DollarSign, BookOpen, AlertCircle, Briefcase } from "lucide-react";
-import Swal from "sweetalert2"; // <--- 2. Import SweetAlert
+import { useNavigate } from "react-router-dom"; 
+import { Check, X, User, DollarSign, BookOpen, AlertCircle, Briefcase, Loader2 } from "lucide-react";
+import Swal from "sweetalert2"; 
 
 const AppliedTutors = () => {
   const { user } = useUserAuth();
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // <--- 3. Initialize Hook
+  const navigate = useNavigate(); 
 
   // Fetch received applications
   useEffect(() => {
@@ -17,7 +17,8 @@ const AppliedTutors = () => {
         if (!user?.email) return;
         const token = localStorage.getItem("access-token");
         
-        const res = await fetch(`http://localhost:5000/applications/received/${user.email}`, {
+        // FIX: Use Environment Variable
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/applications/received/${user.email}`, {
           headers: { authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -49,7 +50,7 @@ const AppliedTutors = () => {
         if (result.isConfirmed) {
             try {
                 const token = localStorage.getItem("access-token");
-                const res = await fetch(`http://localhost:5000/applications/reject/${id}`, {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/applications/reject/${id}`, {
                     method: "PATCH",
                     headers: { authorization: `Bearer ${token}` },
                 });
@@ -67,7 +68,7 @@ const AppliedTutors = () => {
     });
   };
 
-  // ✅ NEW: Handle Approve (Redirect to Payment)
+  // Handle Approve (Redirect to Payment)
   const handleApprove = (app) => {
     Swal.fire({
         title: "Hire this Tutor?",
@@ -84,7 +85,7 @@ const AppliedTutors = () => {
     });
   };
 
-  if (loading) return <div className="p-10 text-center"><span className="loading loading-spinner loading-lg text-primary"></span></div>;
+  if (loading) return <div className="p-10 text-center"><Loader2 className="animate-spin text-primary h-10 w-10 mx-auto"/></div>;
 
   return (
     <div className="max-w-5xl mx-auto">

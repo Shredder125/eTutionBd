@@ -1,141 +1,155 @@
 import React, { useState } from 'react';
-import { Clock, Users, Briefcase, Mail, Phone, Calendar, Sparkles, MoreHorizontal, Send } from 'lucide-react';
+import { 
+    Clock, Users, Briefcase, Mail, Phone, Sparkles, 
+    Send, Loader2, Star, ShieldCheck, MapPin, BookOpen, GraduationCap
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 
 const TutorCard = ({ tutor }) => {
-  const { name, role, experience, studentEnrollments, tuitionSchedule, email, phone } = tutor;
+    const { 
+        name, 
+        role = 'Expert Tutor', 
+        experience, 
+        studentEnrollments, 
+        tuitionSchedule, 
+        email, 
+        phone,
+        subject = "General Science", 
+        rating = 4.9 
+    } = tutor || {};
 
-  // 1. Image Finder
-  const imageUrl = tutor.profileImage || tutor.image || tutor.img || tutor.photo || tutor.avatar || tutor.url;
+    // Logic to parse Image (prioritizing profileImage based on your DB structure)
+    const imageUrl = 
+        tutor?.profileImage || 
+        tutor?.photoURL || 
+        tutor?.image || 
+        tutor?.avatar || 
+        tutor?.url;
 
-  // 2. State for broken links
-  const [imageError, setImageError] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
-  // LOGIC: Limit Schedule
-  const MAX_SCHEDULE_ITEMS = 2;
-  const displayedSchedule = tuitionSchedule?.slice(0, MAX_SCHEDULE_ITEMS) || []; 
-  const remainingSlots = (tuitionSchedule?.length || 0) - MAX_SCHEDULE_ITEMS;
+    // Initials Logic
+    const initials = name
+        ? name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+        : "T?";
 
-  // LOGIC: Initials
-  const initials = name
-    ? name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
-    : "??";
-
-  return (
-    <div className="group relative w-full max-w-[22rem] h-full min-h-[540px] flex flex-col bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 hover:shadow-indigo-500/20 pb-2">
-      
-      {/* HEADER */}
-      <div className="relative h-40 bg-gradient-to-br from-violet-600 via-indigo-600 to-blue-500 p-6 shrink-0">
-        <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white/10 rounded-full blur-2xl rotate-45 pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-indigo-900/20 rounded-full blur-3xl pointer-events-none"></div>
-        
-        <div className="relative z-10 flex justify-between items-start">
-          <div className="max-w-[70%]">
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/20 text-white rounded-full text-[10px] font-bold backdrop-blur-md uppercase tracking-wider shadow-sm mb-3 border border-white/10">
-              <Sparkles size={10} className="text-yellow-300" /> {role}
-            </span>
-            <h2 className="text-2xl font-extrabold text-white tracking-tight leading-tight truncate" title={name}>
-              {name}
-            </h2>
-          </div>
-
-          {/* AVATAR */}
-          <div className="h-14 w-14 rounded-2xl bg-white/95 backdrop-blur-xl text-indigo-700 flex items-center justify-center font-black text-lg shadow-lg ring-4 ring-white/20 overflow-hidden relative">
-            {imageUrl && !imageError ? (
-              <img 
-                src={imageUrl} 
-                alt={name} 
-                className="h-full w-full object-cover"
-                onError={() => setImageError(true)}
-              />
-            ) : (
-              <span className="select-none">{initials}</span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* STATS */}
-      <div className="px-6 -mt-8 relative z-20 shrink-0">
-        <div className="flex gap-4">
-          <div className="flex-1 bg-white rounded-2xl p-3 shadow-md border border-slate-50 flex flex-col items-center justify-center text-center">
-            <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg mb-1">
-              <Briefcase size={16} strokeWidth={2} />
+    // Loading State
+    if (!tutor) {
+        return (
+            <div className="h-[560px] w-full bg-[#0a0a0a] border border-white/5 rounded-[24px] flex items-center justify-center">
+                <Loader2 className="animate-spin text-violet-500" size={32} />
             </div>
-            <p className="text-xl font-black text-slate-800">{experience || 0}+</p>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Years</p>
-          </div>
-          <div className="flex-1 bg-white rounded-2xl p-3 shadow-md border border-slate-50 flex flex-col items-center justify-center text-center">
-             <div className="p-1.5 bg-violet-50 text-violet-600 rounded-lg mb-1">
-               <Users size={16} strokeWidth={2} />
-             </div>
-            <p className="text-xl font-black text-slate-800">{studentEnrollments || 0}</p>
-             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Students</p>
-          </div>
-        </div>
-      </div>
+        );
+    }
 
-      {/* BODY */}
-      <div className="p-6 pt-6 flex flex-col flex-grow">
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-               <Calendar size={16} />
-            </div>
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Availability</h3>
-          </div>
-          
-          <div className="space-y-2 pl-2">
-            {displayedSchedule.map((slot, index) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                   <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-                   <span className="font-semibold text-slate-700">{slot.day}</span>
+    return (
+        <motion.div 
+            whileHover={{ y: -10 }}
+            // Increased height slightly to accommodate larger avatar space
+            className="group relative w-full h-[560px] bg-[#0a0a0a] rounded-[24px] border border-white/10 overflow-hidden flex flex-col transition-all duration-500 hover:shadow-[0_0_50px_-10px_rgba(124,58,237,0.3)] hover:border-violet-500/50"
+        >
+            {/* --- 1. CINEMATIC HEADER --- */}
+            {/* Increased height to h-40 to balance the larger avatar overlap */}
+            <div className="relative h-40 bg-[#111] overflow-hidden shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-r from-violet-900/40 via-fuchsia-900/20 to-black opacity-80" />
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay" />
+                
+                <div className="absolute top-4 right-4 z-20">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-black/60 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-bold text-violet-300 uppercase tracking-widest shadow-xl">
+                        <Sparkles size={10} className="fill-violet-300" /> {role}
+                    </span>
                 </div>
-                <div className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded">
-                  <Clock size={12} />
-                  {slot.startTime} - {slot.endTime}
+            </div>
+
+            {/* --- 2. IDENTITY SECTION (The Main Focus) --- */}
+            {/* Increased negative margin to -mt-20 to center the massive 160px avatar */}
+            <div className="relative px-6 flex flex-col items-center -mt-20 z-10 shrink-0">
+                
+                {/* MASSIVE 3D AVATAR CONTAINER */}
+                <div className="relative group-hover:scale-105 transition-transform duration-500 ease-out">
+                    {/* CHANGED: 
+                        1. Size increased to w-40 h-40 (160px)
+                        2. Shape changed to rounded-full (Circle for max focus)
+                        3. Added a thick 'ring' that glows on hover 
+                    */}
+                    <div className="w-40 h-40 rounded-full p-1 bg-gradient-to-b from-violet-500 to-black shadow-2xl relative z-10 ring-8 ring-[#0a0a0a] group-hover:ring-violet-500/30 transition-all duration-500">
+                        <div className="w-full h-full rounded-full overflow-hidden bg-[#1a1a1a] relative">
+                            {imageUrl && !imageError ? (
+                                <img 
+                                    src={imageUrl} 
+                                    alt={name} 
+                                    className="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-700" 
+                                    onError={() => setImageError(true)} 
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-white bg-neutral-800">
+                                    {initials}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    {/* Verified Icon - Repositioned for circle */}
+                    <div className="absolute bottom-1 right-1 z-20 bg-green-500 text-black p-1.5 rounded-full border-4 border-[#0a0a0a]">
+                        <ShieldCheck size={16} strokeWidth={3} />
+                    </div>
                 </div>
-              </div>
-            ))}
 
-            {remainingSlots > 0 && (
-              <div className="pt-1 flex justify-center">
-                 <span className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
-                    <MoreHorizontal size={12} /> +{remainingSlots} more days
-                 </span>
-              </div>
-            )}
+                {/* Name & Info - Pushed down slightly */}
+                <div className="text-center mt-5 w-full">
+                    <h3 className="text-2xl font-bold text-white truncate group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-violet-400 transition-all duration-300">
+                        {name}
+                    </h3>
+                    
+                    <div className="mt-2 mb-3 flex justify-center">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 group-hover:border-violet-500/30 transition-colors">
+                            <BookOpen size={14} className="text-fuchsia-400" />
+                            <span className="text-sm font-medium text-neutral-200 truncate max-w-[200px]">{subject}</span>
+                        </div>
+                    </div>
 
-            {(!displayedSchedule || displayedSchedule.length === 0) && (
-              <p className="text-xs text-slate-400 italic pl-4">No schedule available</p>
-            )}
-          </div>
-        </div>
-
-        {/* FOOTER */}
-        <div className="mt-auto pt-4 border-t border-slate-100">
-          <div className="space-y-2 mb-4">
-            <div className="group/item flex items-center gap-3 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer" title={email}>
-              <div className="shrink-0 p-1.5 bg-slate-100 text-slate-500 rounded-md group-hover/item:text-blue-600 group-hover/item:bg-blue-50 transition-colors">
-                 <Mail size={14} />
-              </div>
-              <span className="text-xs font-medium text-slate-600 truncate w-full">{email}</span>
+                    <div className="flex items-center justify-center gap-1.5 text-xs text-neutral-500">
+                        <div className="flex text-yellow-400"><Star size={12} fill="currentColor"/></div>
+                        <span className="font-bold text-white">{rating}</span>
+                        <span>•</span>
+                        <span>{studentEnrollments} Students</span>
+                    </div>
+                </div>
             </div>
-            <div className="group/item flex items-center gap-3 p-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
-              <div className="shrink-0 p-1.5 bg-slate-100 text-slate-500 rounded-md group-hover/item:text-green-600 group-hover/item:bg-green-50 transition-colors">
-                 <Phone size={14} />
-              </div>
-              <span className="text-xs font-medium text-slate-600">{phone}</span>
+
+            {/* --- 3. STATS GRID --- */}
+            <div className="px-6 mt-4 grid grid-cols-2 gap-3 shrink-0">
+                <div className="bg-[#151515] p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center hover:bg-[#1a1a1a] transition-colors group/stat">
+                    <Briefcase size={16} className="text-neutral-500 group-hover/stat:text-violet-400 transition-colors mb-1" />
+                    <span className="text-base font-bold text-white">{experience} Yrs</span>
+                    <span className="text-[10px] text-neutral-600 uppercase tracking-wider font-bold">Experience</span>
+                </div>
+                <div className="bg-[#151515] p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center hover:bg-[#1a1a1a] transition-colors group/stat">
+                    <GraduationCap size={16} className="text-neutral-500 group-hover/stat:text-fuchsia-400 transition-colors mb-1" />
+                    <span className="text-base font-bold text-white">Online</span>
+                    <span className="text-[10px] text-neutral-600 uppercase tracking-wider font-bold">Mode</span>
+                </div>
             </div>
-          </div>
-          <button className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-sm shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transform transition-all duration-300 hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2 group/btn">
-            Apply Now
-            <Send size={16} className="group-hover/btn:translate-x-1 transition-transform" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+
+            {/* --- 4. FOOTER --- */}
+            <div className="p-6 mt-auto flex flex-col gap-4">
+                <div className="flex items-center justify-between text-xs text-neutral-400 px-1">
+                    <div className="flex items-center gap-2">
+                        <MapPin size={12} /> <span className="truncate max-w-[100px]">Dhaka, BD</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Mail size={12} /> <span className="truncate max-w-[120px]">{email}</span>
+                    </div>
+                </div>
+
+                <button className="relative w-full py-4 rounded-xl bg-white text-black font-bold text-sm overflow-hidden group/btn shadow-[0_0_20px_-5px_rgba(255,255,255,0.3)]">
+                    <div className="absolute inset-0 bg-gradient-to-r from-violet-200 via-white to-fuchsia-200 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                        View Profile <Send size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                    </span>
+                </button>
+            </div>
+        </motion.div>
+    );
 };
 
 export default TutorCard;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring } from "framer-motion";
 import { 
   Facebook, 
   Instagram, 
@@ -9,7 +9,9 @@ import {
   Phone, 
   ChevronRight,
   Send,
-  Sparkles
+  Sparkles,
+  ArrowUp,
+  ShieldCheck
 } from "lucide-react";
 
 /* CUSTOM X ICON */
@@ -26,290 +28,293 @@ const XIcon = ({ size = 24, className, ...props }) => (
   </svg>
 );
 
-/* ADVANCED STYLES */
+/* -------------------------------------------------------------------------- */
+/* STYLES & UTILS                                                             */
+/* -------------------------------------------------------------------------- */
 const styles = `
-  @keyframes float-slow {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
+  .glass-card {
+    background: rgba(10, 10, 10, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
-  @keyframes shimmer {
-    0% { background-position: -100% 0; }
-    100% { background-position: 200% 0; }
+  
+  /* Synced with Home Page Animation */
+  @keyframes gradient-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
-  .shimmer-text {
-    background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 50%, #8b5cf6 100%);
-    background-size: 200% auto;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 3s linear infinite;
+  
+  .footer-animated-bg {
+    background: linear-gradient(-45deg, #000000, #1e1b4b, #0f172a, #020617);
+    background-size: 400% 400%;
+    animation: gradient-flow 15s ease infinite; 
   }
 `;
 
-/* DATA */
 const SOCIAL_LINKS = [
-  { icon: Facebook, href: "#", label: "Facebook", color: "hover:bg-blue-600" },
-  { icon: Instagram, href: "#", label: "Instagram", color: "hover:bg-pink-600" },
-  { icon: XIcon, href: "#", label: "X (Twitter)", color: "hover:bg-neutral-700" },
-  { icon: Linkedin, href: "#", label: "LinkedIn", color: "hover:bg-blue-700" },
+  { icon: Facebook, href: "#", label: "Facebook", color: "hover:text-blue-500", border: "hover:border-blue-500/50" },
+  { icon: Instagram, href: "#", label: "Instagram", color: "hover:text-pink-500", border: "hover:border-pink-500/50" },
+  { icon: XIcon, href: "#", label: "X (Twitter)", color: "hover:text-white", border: "hover:border-white/50" },
+  { icon: Linkedin, href: "#", label: "LinkedIn", color: "hover:text-blue-400", border: "hover:border-blue-400/50" },
 ];
 
 const FOOTER_SECTIONS = [
   {
-    title: "Services",
+    title: "Platform",
     links: [
-      { label: "Tuition Jobs", href: "/jobs" },
       { label: "Find Tutors", href: "/tutors" },
+      { label: "Browse Jobs", href: "/jobs" },
       { label: "Online Classes", href: "/classes" },
-      { label: "Institute Partnership", href: "/partnership" },
+      { label: "Institute Partner", href: "/partnership" },
     ],
   },
   {
-    title: "Legal",
+    title: "Support",
     links: [
-      { label: "Terms of Use", href: "/terms" },
+      { label: "Help Center", href: "/help" },
+      { label: "Safety Guidelines", href: "/safety" },
+      { label: "Terms of Service", href: "/terms" },
       { label: "Privacy Policy", href: "/privacy" },
-      { label: "Refund Policy", href: "/refund" },
-      { label: "Community Guidelines", href: "/guidelines" },
     ],
   },
 ];
 
 const CONTACT_INFO = [
-  { icon: Phone, text: "+880 1234-567890", href: "tel:+8801234567890" },
+  { icon: Phone, text: "+91 98765-43210", href: "tel:+919876543210" },
   { icon: Mail, text: "support@etuitionbd.com", href: "mailto:support@etuitionbd.com" },
-  { icon: MapPin, text: "Dhaka, Bangladesh", href: null },
+  { icon: MapPin, text: "Indiranagar, Bangalore, India", href: null },
 ];
 
-/* ANIMATION VARIANTS */
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-};
+/* -------------------------------------------------------------------------- */
+/* ANIMATED COMPONENTS                                                        */
+/* -------------------------------------------------------------------------- */
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-};
+// Magnetic Social Button
+const MagneticButton = ({ icon: Icon, href, label, color, border }) => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, { stiffness: 150, damping: 15 });
+  const springY = useSpring(y, { stiffness: 150, damping: 15 });
 
-/* SOCIAL BUTTON */
-const SocialButton = ({ icon: Icon, href, label, color }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  function handleMouseMove(event) {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set((event.clientX - centerX) * 0.3);
+    y.set((event.clientY - centerY) * 0.3);
+  }
+
+  function handleMouseLeave() {
+    x.set(0);
+    y.set(0);
+  }
 
   return (
     <motion.a
       href={href}
       aria-label={label}
-      whileHover={{ scale: 1.1, y: -3 }}
-      whileTap={{ scale: 0.95 }}
-      onHoverStart={() => setIsHovered(true)}
-      onHoverEnd={() => setIsHovered(false)}
-      className={`relative p-3 rounded-xl bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white hover:border-violet-500/50 transition-all duration-300 overflow-hidden group ${color}`}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ x: springX, y: springY }}
+      className={`relative p-3 rounded-xl bg-white/5 border border-white/10 text-neutral-400 transition-all duration-300 group ${color} ${border}`}
     >
-      {isHovered && (
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 2, opacity: 0 }}
-          transition={{ duration: 0.6 }}
-          className="absolute inset-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 rounded-xl"
-        />
-      )}
-      <Icon size={20} className="relative z-10" />
+      <Icon size={20} className="relative z-10 transition-transform group-hover:scale-110" />
+      <div className="absolute inset-0 rounded-xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
     </motion.a>
   );
 };
 
-/* FOOTER COLUMN */
-const FooterColumn = ({ title, links }) => (
-  <motion.div variants={fadeInUp}>
-    <h3 className="text-lg font-bold mb-6 text-white">{title}</h3>
-    <ul className="space-y-3">
-      {links.map((link, i) => (
-        <motion.li 
-          key={i}
-          whileHover={{ x: 5 }}
-          transition={{ duration: 0.2 }}
-        >
-          <a
-            href={link.href}
-            className="group flex items-center gap-2 text-neutral-400 hover:text-violet-400 transition-colors duration-200"
-          >
-            <ChevronRight
-              size={16}
-              className="text-neutral-700 group-hover:text-violet-500 transition-colors"
-            />
-            {link.label}
-          </a>
-        </motion.li>
-      ))}
-    </ul>
-  </motion.div>
-);
+/* -------------------------------------------------------------------------- */
+/* MAIN FOOTER                                                                */
+/* -------------------------------------------------------------------------- */
 
-/* MAIN FOOTER */
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
 
-  const handleSubscribe = () => {
-    if (email) {
-      console.log("Subscribed:", email);
-      setEmail("");
-    }
+  const handleScrollTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <>
       <style>{styles}</style>
-      <footer className="relative bg-black text-neutral-200 pt-20 md:pt-24 pb-8 px-4 sm:px-6 overflow-hidden border-t border-neutral-900">
+      <footer className="relative bg-[#000000] text-neutral-200 pt-24 pb-12 overflow-hidden border-t border-white/5">
         
-        {/* Animated Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
-          <div className="absolute -top-1/2 left-1/4 w-96 h-96 bg-violet-600 rounded-full blur-[150px]" />
-          <div className="absolute -bottom-1/2 right-1/4 w-96 h-96 bg-fuchsia-600 rounded-full blur-[150px]" />
+        {/* === DARK FOREVER GRADIENT BACKGROUND (MATCHED) === */}
+        <div className="absolute inset-0 z-0 footer-animated-bg">
+            {/* Grain Texture (Low Opacity) */}
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 brightness-100 contrast-150 mix-blend-overlay"></div>
+            
+            {/* Vignette to darken edges even more */}
+            <div className="absolute inset-0 bg-radial-[circle_at_center_transparent_0%_#000000_100%] opacity-60"></div>
         </div>
 
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px)',
-            backgroundSize: '50px 50px'
-          }} />
+        {/* Grid Overlay (Subtle) */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+             <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
         </div>
-        
-        <div className="relative max-w-7xl mx-auto z-10">
-          <motion.div 
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12 mb-12 md:mb-16"
-          >
+
+        {/* Glow Orbs (Matched Colors: Indigo/Slate) */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-900/10 rounded-full blur-[150px] pointer-events-none z-0" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-slate-900/10 rounded-full blur-[150px] pointer-events-none z-0" />
+
+        <div className="relative max-w-7xl mx-auto px-6 z-10">
+          
+          {/* TOP SECTION: BRAND & NEWSLETTER */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16 border-b border-white/5 pb-12">
             
-            {/* BRAND COLUMN */}
-            <motion.div variants={fadeInUp} className="space-y-6">
-              <div className="space-y-3">
-                <motion.h2 
-                  whileHover={{ scale: 1.05 }}
-                  className="text-4xl font-black shimmer-text cursor-pointer inline-block"
-                >
-                  eTuitionBd
-                </motion.h2>
-                <p className="text-neutral-400 text-sm leading-relaxed">
-                  Empowering education with reliable tuition services. Learn, teach, and grow with Bangladesh's most trusted platform.
+            {/* Brand Area */}
+            <div className="lg:col-span-5 space-y-6">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }} 
+                whileInView={{ opacity: 1, x: 0 }} 
+                viewport={{ once: true }}
+                className="inline-block"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                    <span className="text-3xl font-bold text-white tracking-tight">eTuitionBd</span>
+                </div>
+                <p className="text-neutral-500 leading-relaxed max-w-sm">
+                  India's most advanced AI-powered tutoring platform. Connecting brilliant minds from IITs and Top Universities with ambitious learners.
                 </p>
-              </div>
-              
-              {/* Social Links with animations */}
-              <div className="flex gap-3">
+              </motion.div>
+
+              <div className="flex gap-4">
                 {SOCIAL_LINKS.map((social, idx) => (
-                  <SocialButton key={idx} {...social} />
+                  <MagneticButton key={idx} {...social} />
                 ))}
               </div>
+            </div>
 
-              {/* Trust badge */}
-              <motion.div 
-                whileHover={{ scale: 1.02 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600/10 to-fuchsia-600/10 border border-violet-500/20"
-              >
-                <Sparkles size={16} className="text-violet-400" />
-                <span className="text-sm text-neutral-300 font-medium">Trusted by 12,000+ students</span>
-              </motion.div>
-            </motion.div>
+            {/* Newsletter Area (Updated Colors) */}
+            <div className="lg:col-span-7 flex flex-col justify-center">
+               <motion.div 
+                 initial={{ opacity: 0, y: 20 }} 
+                 whileInView={{ opacity: 1, y: 0 }} 
+                 viewport={{ once: true }}
+                 className="glass-card p-8 rounded-2xl relative overflow-hidden"
+               >
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-900/20 rounded-full blur-[80px]" />
+                  <div className="relative z-10">
+                      <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                        <Sparkles size={18} className="text-indigo-400" /> 
+                        Join the Elite Circle
+                      </h3>
+                      <p className="text-neutral-500 text-sm mb-6">Get weekly study hacks and exam tips from top educators.</p>
+                      
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="relative flex-grow group">
+                            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-800 to-purple-800 rounded-xl opacity-30 group-hover:opacity-100 transition duration-500 blur-sm group-focus-within:opacity-100"></div>
+                            <input 
+                                type="email" 
+                                placeholder="name@example.com" 
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="relative w-full bg-black/50 text-white px-4 py-3.5 rounded-xl border border-white/10 focus:outline-none focus:ring-0 placeholder-neutral-600"
+                            />
+                        </div>
+                        <button className="px-6 py-3.5 rounded-xl bg-white text-black font-bold hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2">
+                            Subscribe <Send size={16} />
+                        </button>
+                      </div>
+                  </div>
+               </motion.div>
+            </div>
+          </div>
 
-            {/* DYNAMIC LINK COLUMNS */}
+          {/* MIDDLE SECTION: LINKS & INFO */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-8 mb-12">
+            
             {FOOTER_SECTIONS.map((section, idx) => (
-              <FooterColumn key={idx} title={section.title} links={section.links} />
+              <div key={idx} className="col-span-1">
+                <h4 className="font-bold text-white mb-6 flex items-center gap-2">
+                    <span className="w-1 h-4 bg-indigo-500 rounded-full" />
+                    {section.title}
+                </h4>
+                <ul className="space-y-3">
+                  {section.links.map((link, lIdx) => (
+                    <li key={lIdx}>
+                      <a href={link.href} className="text-sm text-neutral-500 hover:text-white transition-colors flex items-center gap-1 group">
+                        <ChevronRight size={12} className="opacity-0 -ml-3 group-hover:opacity-100 group-hover:ml-0 transition-all" />
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
 
-            {/* NEWSLETTER & CONTACT */}
-            <motion.div variants={fadeInUp} className="space-y-6">
-              <div>
-                <h3 className="text-lg font-bold mb-4 text-white">Stay Updated</h3>
-                <p className="text-neutral-400 text-sm mb-4">
-                  Subscribe for the latest tutor jobs and exclusive updates.
-                </p>
-                
-                <div className="relative group">
-                  <motion.div
-                    whileFocus={{ scale: 1.02 }}
-                    className="flex rounded-xl bg-neutral-900/70 border-2 border-neutral-800 focus-within:border-violet-500/50 transition-all overflow-hidden"
-                  >
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleSubscribe()}
-                      placeholder="Enter your email"
-                      className="w-full bg-transparent py-3 px-4 text-sm text-white placeholder-neutral-500 outline-none"
-                    />
-                    <motion.button 
-                      onClick={handleSubscribe}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white px-5 transition-all"
-                    >
-                      <Send size={18} />
-                    </motion.button>
-                  </motion.div>
-                </div>
-              </div>
+            {/* Contact Column (Updated Colors) */}
+            <div className="col-span-2 md:col-span-2 lg:col-span-1">
+                <h4 className="font-bold text-white mb-6 flex items-center gap-2">
+                    <span className="w-1 h-4 bg-purple-500 rounded-full" />
+                    Contact
+                </h4>
+                <ul className="space-y-4">
+                    {CONTACT_INFO.map((info, idx) => (
+                        <li key={idx} className="flex items-start gap-3 text-sm text-neutral-500">
+                            <div className="p-2 bg-white/5 rounded-lg text-purple-400">
+                                <info.icon size={16} />
+                            </div>
+                            <div>
+                                <span className="block text-xs text-neutral-600 uppercase tracking-wider mb-0.5">
+                                    {idx === 0 ? "Call Us" : idx === 1 ? "Email" : "Headquarters"}
+                                </span>
+                                {info.href ? (
+                                    <a href={info.href} className="text-neutral-500 hover:text-white transition-colors">{info.text}</a>
+                                ) : (
+                                    <span className="text-neutral-500">{info.text}</span>
+                                )}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
 
-              {/* Contact Details */}
-              <div className="space-y-3 pt-2">
-                {CONTACT_INFO.map((item, idx) => (
-                  <motion.div 
-                    key={idx}
-                    whileHover={{ x: 5 }}
-                    className="flex items-center gap-3 text-neutral-400 text-sm group"
-                  >
-                    <div className="p-2 rounded-lg bg-neutral-900 border border-neutral-800 text-violet-400 group-hover:bg-violet-500/10 group-hover:border-violet-500/30 transition-all">
-                      <item.icon size={14} />
+            {/* Status Column */}
+            <div className="col-span-2 md:col-span-2 lg:col-span-1">
+                 <div className="p-6 rounded-2xl bg-black/40 border border-white/5">
+                    <h5 className="text-xs font-bold text-neutral-600 uppercase tracking-wider mb-4">System Status</h5>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-900 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-600"></span>
+                        </div>
+                        <span className="text-green-500 font-mono text-sm">All Systems Go</span>
                     </div>
-                    {item.href ? (
-                      <a href={item.href} className="hover:text-white transition-colors">
-                        {item.text}
-                      </a>
-                    ) : (
-                      <span>{item.text}</span>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </motion.div>
+                    <div className="text-xs text-neutral-600 mb-4">Last checked: Just now</div>
+                    
+                    <div className="flex gap-2">
+                        <ShieldCheck size={16} className="text-neutral-600" />
+                        <span className="text-xs text-neutral-600">SSL Encrypted</span>
+                    </div>
+                 </div>
+            </div>
+
+          </div>
 
           {/* BOTTOM BAR */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="pt-8 mt-8 border-t border-neutral-900 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-neutral-500"
-          >
-            <p className="text-center md:text-left">
-              © {currentYear} <span className="text-violet-400 font-semibold">eTuitionBd</span> Inc. All rights reserved.
-            </p>
-            <div className="flex gap-6">
-              {['Privacy', 'Terms', 'Sitemap'].map((item) => (
-                <motion.a 
-                  key={item}
-                  href="#"
-                  whileHover={{ scale: 1.05, color: '#a78bfa' }}
-                  className="hover:text-violet-400 transition-colors"
-                >
-                  {item}
-                </motion.a>
-              ))}
+          <div className="pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-neutral-600 border-t border-white/5">
+            <div className="flex flex-col md:flex-row items-center gap-4">
+                <span>© {currentYear} eTuitionBd Inc.</span>
+                <span className="hidden md:block w-1 h-1 bg-neutral-800 rounded-full" />
+                <div className="flex gap-4">
+                    <a href="#" className="hover:text-white transition-colors">Privacy</a>
+                    <a href="#" className="hover:text-white transition-colors">Terms</a>
+                    <a href="#" className="hover:text-white transition-colors">Sitemap</a>
+                </div>
             </div>
-          </motion.div>
+            
+            <button 
+                onClick={handleScrollTop} 
+                className="group flex items-center gap-2 text-neutral-500 hover:text-white transition-colors px-4 py-2 rounded-full bg-white/5 hover:bg-white/10"
+            >
+                Back to top <ArrowUp size={14} className="group-hover:-translate-y-1 transition-transform" />
+            </button>
+          </div>
 
-          {/* Decorative bottom line */}
-          <motion.div 
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="mt-6 h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent"
-          />
         </div>
       </footer>
     </>
