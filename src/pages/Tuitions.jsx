@@ -60,8 +60,13 @@ const Tuitions = () => {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/tuitions`);
         const data = await res.json();
 
-        const approved = Array.isArray(data) ? data.filter(t => t.status === 'approved') : [];
-        const withIndianLocations = approved.map(t => ({ ...t, location: INDIAN_CITIES[Math.floor(Math.random() * INDIAN_CITIES.length)] }));
+        // Safety check: ensure data is an array before filtering
+        const dataArray = Array.isArray(data) ? data : [];
+        const approved = dataArray.filter(t => t?.status === 'approved');
+        const withIndianLocations = approved.map(t => ({ 
+          ...t, 
+          location: INDIAN_CITIES[Math.floor(Math.random() * INDIAN_CITIES.length)] 
+        }));
 
         setTuitions(withIndianLocations);
         setFilteredTuitions(withIndianLocations);
@@ -72,10 +77,12 @@ const Tuitions = () => {
                 headers: { authorization: `Bearer ${token}` }
             });
             const roleData = await roleRes.json();
-            if (roleData.role === 'tutor') setIsTutor(true);
+            if (roleData?.role === 'tutor') setIsTutor(true);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
+        setTuitions([]);
+        setFilteredTuitions([]);
       } finally {
         setLoading(false);
       }
@@ -239,7 +246,7 @@ const Tuitions = () => {
                         <h2 className="text-2xl font-bold text-white mb-4 group-hover:text-violet-400 transition-colors">{item.subject}</h2>
                         <div className="space-y-3 mb-6 text-neutral-400 text-sm">
                           <div className="flex items-center gap-2"><MapPin size={16} className="text-violet-400" /> <span>{item.location}</span></div>
-                          <div className="flex items-center gap-2"><Clock size={16} className="text-violet-400" /> <span>{item.daysPerWeek} Days / Week</span></div>
+                          <div className="flex items-center gap-2"><Clock size={16} className="text-violet-400" /> <span>{item.daysPerWeek || "Flexible"} Days / Week</span></div>
                           <div className="flex items-center gap-2"><DollarSign size={16} className="text-emerald-400" /> <span className="font-bold text-white">{item.budget} INR</span> <span>/ month</span></div>
                         </div>
                         {isTutor ? (
