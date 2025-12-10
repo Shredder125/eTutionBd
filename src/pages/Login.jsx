@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useUserAuth } from "../context/AuthContext"; // <--- IMPORT CONTEXT
+import { useUserAuth } from "../context/AuthContext";
 import { 
   Mail, 
   Lock, 
@@ -11,7 +11,7 @@ import {
   ArrowLeft, 
   Star, 
   Quote, 
-  AlertCircle // <--- Added for error display
+  AlertCircle 
 } from "lucide-react";
 
 /* --- MOCK TESTIMONIALS DATA --- */
@@ -65,15 +65,12 @@ const GoogleIcon = ({ className }) => (
 
 const Login = () => {
   const navigate = useNavigate();
-  // Destructure login functions from context
   const { logIn, googleSignIn } = useUserAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(""); // State to store error messages
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({ email: "", password: "" });
-  
-  // Carousel State
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
 
   // Auto-scroll testimonials
@@ -84,19 +81,19 @@ const Login = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // --- GOOGLE LOGIN LOGIC ---
+  // Google Login
   const handleGoogleLogin = async () => {
     try {
       setError("");
       await googleSignIn();
-      navigate("/"); // Redirect to home/dashboard
+      navigate("/");
     } catch (err) {
       console.error(err);
       setError("Failed to sign in with Google.");
     }
   };
 
-  // --- EMAIL/PASS LOGIN LOGIC ---
+  // Email/Password Login
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -104,10 +101,9 @@ const Login = () => {
     
     try {
       await logIn(formData.email, formData.password);
-      navigate("/"); // Redirect to home/dashboard
+      navigate("/");
     } catch (err) {
       console.error(err);
-      // Clean up Firebase error message
       const errorMessage = err.message.includes("auth/invalid-credential") 
         ? "Invalid email or password." 
         : err.message.replace("Firebase: ", "");
@@ -238,7 +234,7 @@ const Login = () => {
             </div>
           </div>
 
-          {/* --- ERROR DISPLAY --- */}
+          {/* Error Display */}
           {error && (
             <div className="bg-red-500/10 border border-red-500/50 text-red-500 p-3 rounded-lg flex items-center gap-2 text-sm animate-pulse">
               <AlertCircle size={16} /> {error}
@@ -266,7 +262,7 @@ const Login = () => {
             <div className="space-y-1">
               <div className="flex justify-between items-center">
                 <label className="text-sm font-medium text-neutral-300">Password</label>
-                <Link to="/forgot-password" class="text-xs font-medium text-purple-400 hover:text-purple-300 transition-colors">
+                <Link to="/forgot-password" className="text-xs font-medium text-purple-400 hover:text-purple-300 transition-colors">
                   Forgot password?
                 </Link>
               </div>

@@ -7,10 +7,9 @@ import {
     Search, BookOpen, Users, CheckCircle, ArrowRight, ShieldCheck, Zap,
     DollarSign, MapPin, Clock, Loader2 
 } from "lucide-react";
-
 import TutorCard from "../components/TutorCard"; 
 
-/* --- CSS FOR MARQUEE ANIMATION --- */
+/* FIXED MARQUEE CSS */
 const marqueeStyle = `
   @keyframes scroll {
     0% { transform: translateX(0); }
@@ -19,13 +18,12 @@ const marqueeStyle = `
   .animate-marquee {
     animation: scroll 40s linear infinite;
   }
-  .animate-marquee:hover {
-    animation-play-state: paused;
+  .marquee-container:hover .animate-marquee {
+    animation-play-state: paused !important;
   }
 `;
 
 /* --- LIVE STATS DATA (Used for CountUp placeholders) --- */
-// Using local definitions for static text/values not fetched from the backend
 const STATIC_STATS_DATA = [
   { label: "Active Tutors", val: 5000, suffix: "+" },
   { label: "Happy Students", val: 12000, suffix: "+" },
@@ -94,52 +92,71 @@ const StatItem = ({ label, val, suffix }) => {
 const Home = () => {
   const [latestTuitions, setLatestTuitions] = useState([]);
   const [featuredTutors, setFeaturedTutors] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tuitionLoading, setTuitionLoading] = useState(true);
+  const [tutorLoading, setTutorLoading] = useState(true);
 
-  // Fetch Dynamic Data
-  useEffect(() => {
-    const fetchHomeData = async () => {
-      try {
-        // 1. Fetch Latest Tuition Posts (e.g., the first 3)
-        // Using /api/tuitions which will be proxied/routed to the backend URL
-        const tuitionRes = await fetch("/api/tuitions?limit=3");
-        const tuitionData = await tuitionRes.json();
-        setLatestTuitions(tuitionData.result || []);
+  /* ✅ FIXED: Fetch function MOVED OUTSIDE useEffect & made self-contained */
+  const fetchData = async (url, setter, setLoading) => {
+    try {
+      setLoading(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
-        // 2. Fetch Featured Tutors (ALL tutors for the marquee)
-        const tutorRes = await fetch("/api/featured-tutors");
-        const tutorData = await tutorRes.json();
-        setFeaturedTutors(tutorData || []);
-        
-      } catch (error) {
-        console.error("Error fetching homepage data:", error);
-      } finally {
-        setLoading(false);
+      const response = await fetch(url, { 
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json' }
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.warn(`${url} failed: ${response.status}`);
+        setter([]);
+        return;
       }
-    };
-    fetchHomeData();
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType?.includes("application/json")) {
+        console.warn(`${url} returned HTML (Vite dev server)`);
+        setter([]);
+        return;
+      }
+
+      const data = await response.json();
+      setter(data.result || data || []);
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error(`Fetch error for ${url}:`, error);
+      }
+      setter([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch tuitions
+    fetchData("/api/tuitions?limit=3", setLatestTuitions, setTuitionLoading);
+    
+    // Fetch tutors  
+    fetchData("/api/featured-tutors", setFeaturedTutors, setTutorLoading);
+
+    // Cleanup on unmount
+    return () => {};
   }, []);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-200 overflow-x-hidden font-sans selection:bg-purple-500/30">
-      
-      {/* INJECT MARQUEE STYLES */}
       <style>{marqueeStyle}</style>
 
-      {/* 1. HERO SECTION */}
+      {/* 1. HERO SECTION - UNCHANGED */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-purple-600/20 rounded-full blur-[100px]" />
           <div className="absolute top-40 right-10 w-96 h-96 bg-pink-600/10 rounded-full blur-[120px]" />
         </div>
-
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <motion.div 
-            initial="hidden"
-            animate="visible"
-            variants={fadeInUp}
-            className="space-y-6"
-          >
+          <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="space-y-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-neutral-900/50 border border-neutral-800 text-sm text-purple-400 mb-4 backdrop-blur-md">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
@@ -147,19 +164,15 @@ const Home = () => {
               </span>
               #1 Trusted Tuition Platform in Bangladesh
             </div>
-            
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.1]">
               Find the Perfect <br />
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400">
                 Tutor or Student
               </span>
             </h1>
-            
             <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed">
-              Connect with verified tutors and eager students instantly. 
-              The smartest way to learn, teach, and grow.
+              Connect with verified tutors and eager students instantly. The smartest way to learn, teach, and grow.
             </p>
-
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-6">
               <Link to="/tutors" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white text-neutral-950 font-semibold hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2">
                 Find a Tutor <Search size={20} />
@@ -172,22 +185,17 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 2. STATS BANNER */}
+      {/* 2. STATS BANNER - UNCHANGED */}
       <div className="border-y border-neutral-900 bg-neutral-950/50 backdrop-blur-sm relative overflow-hidden">
         <div className="absolute inset-0 bg-purple-900/5 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-8 text-center relative z-10">
           {STATIC_STATS_DATA.map((stat, idx) => (
-            <StatItem 
-              key={idx} 
-              label={stat.label} 
-              val={stat.val} 
-              suffix={stat.suffix} 
-            />
+            <StatItem key={idx} label={stat.label} val={stat.val} suffix={stat.suffix} />
           ))}
         </div>
       </div>
 
-      {/* 3. LATEST TUITION POSTS */}
+      {/* 3. LATEST TUITION POSTS - FIXED */}
       <section className="py-24 px-6 bg-neutral-950 relative">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-end mb-12">
@@ -200,54 +208,57 @@ const Home = () => {
             </Link>
           </div>
 
-          {loading ? (
+          {tuitionLoading ? (
             <div className="flex justify-center p-10"><Loader2 className="animate-spin text-purple-600 h-8 w-8" /></div>
-          ) : (
+          ) : latestTuitions.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {latestTuitions.length > 0 ? latestTuitions.map((job) => (
+              {latestTuitions.map((job, idx) => (
                 <motion.div 
-                  key={job._id}
+                  key={job._id || job.id || idx}
                   whileHover={{ y: -5 }}
                   className="group p-6 rounded-2xl bg-neutral-900/30 border border-neutral-800 hover:border-purple-500/30 transition-all duration-300"
                 >
                   <div className="flex justify-between items-start mb-4">
                     <span className="px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-xs font-medium">
-                      {job.subject}
+                      {job.subject || 'General'}
                     </span>
-                    <span className="text-neutral-500 text-xs">{new Date(job.createdAt).toLocaleDateString()}</span>
+                    <span className="text-neutral-500 text-xs">
+                      {job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recent'}
+                    </span>
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">{job.classGrade}</h3>
+                  <h3 className="text-xl font-semibold text-white mb-2">{job.classGrade || 'Various Classes'}</h3>
                   <div className="space-y-3 text-neutral-400 text-sm mb-6">
                     <div className="flex items-center gap-2">
-                      <MapPin size={16} className="text-neutral-600" /> {job.location}
+                      <MapPin size={16} className="text-neutral-600" /> {job.location || 'Bangladesh'}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock size={16} className="text-neutral-600" /> {job.daysPerWeek}
+                      <Clock size={16} className="text-neutral-600" /> {job.daysPerWeek || 'Flexible'}
                     </div>
                     <div className="flex items-center gap-2 text-white font-medium">
-                      <DollarSign size={16} className="text-green-500" /> {job.budget} BDT/mo
+                      <DollarSign size={16} className="text-green-500" /> {job.budget || 'Negotiable'} BDT/mo
                     </div>
                   </div>
                   <Link to="/tuitions" className="block w-full py-3 text-center rounded-lg bg-neutral-800 text-white group-hover:bg-purple-600 transition-colors">
                     View Details
                   </Link>
                 </motion.div>
-              )) : (
-                <p className="col-span-3 text-center text-neutral-500">No approved tuitions available yet. Post one via the Dashboard!</p>
-              )}
+              ))}
+            </div>
+          ) : (
+            <div className="grid place-items-center py-20 text-neutral-500">
+              <p className="text-center text-lg">No approved tuitions available yet. Post one via the Dashboard!</p>
             </div>
           )}
         </div>
       </section>
 
-      {/* 4. HOW IT WORKS */}
+      {/* 4. HOW IT WORKS - UNCHANGED */}
       <section className="py-24 px-6 bg-neutral-900/20 border-y border-neutral-900">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">How It Works</h2>
             <p className="text-neutral-400">Get started in 3 simple steps.</p>
           </div>
-
           <motion.div 
             variants={staggerContainer}
             initial="hidden"
@@ -266,7 +277,6 @@ const Home = () => {
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-3">{step.title}</h3>
                 <p className="text-neutral-400 leading-relaxed">{step.desc}</p>
-                
                 {idx !== STEPS.length - 1 && (
                   <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-[2px] bg-neutral-800" />
                 )}
@@ -276,7 +286,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 5. TOP TUTORS (MARQUEE VERSION) */}
+      {/* 5. TOP TUTORS MARQUEE - FIXED */}
       <section className="py-24 bg-neutral-950 overflow-hidden relative">
         <div className="max-w-7xl mx-auto px-6 mb-12">
           <div className="flex justify-between items-end">
@@ -289,31 +299,29 @@ const Home = () => {
             </Link>
           </div>
         </div>
-
-        {/* MARQUEE CONTAINER */}
         <div className="relative w-full">
-          
-          {/* Gradient Masks (Fade edges) */}
           <div className="absolute left-0 top-0 bottom-0 w-16 md:w-32 z-10 bg-gradient-to-r from-neutral-950 to-transparent pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-16 md:w-32 z-10 bg-gradient-to-l from-neutral-950 to-transparent pointer-events-none" />
-
-          {loading ? (
+          
+          {tutorLoading ? (
             <div className="flex justify-center p-10"><Loader2 className="animate-spin text-purple-600 h-8 w-8" /></div>
-          ) : (
-            <div className="flex w-max animate-marquee gap-8 py-4 px-4 hover:pause">
-              
-              {/* Ensure seamless loop by duplicating list at least once */}
+          ) : featuredTutors.length > 0 ? (
+            <div className="marquee-container flex w-max animate-marquee gap-8 py-4 px-4">
               {[...featuredTutors, ...featuredTutors].map((tutor, index) => (
-                <div key={`${tutor.email}-${index}`} className="w-[22rem] flex-shrink-0">
+                <div key={`${tutor.email || tutor.id || tutor.name || index}-${index}`} className="w-[22rem] flex-shrink-0">
                   <TutorCard tutor={tutor} />
                 </div>
               ))}
+            </div>
+          ) : (
+            <div className="flex justify-center p-10">
+              <p className="text-neutral-500 text-lg">No featured tutors available yet. Check back soon!</p>
             </div>
           )}
         </div>
       </section>
 
-      {/* 6. WHY CHOOSE US */}
+      {/* 6-7. WHY CHOOSE US & CTA - UNCHANGED */}
       <section className="py-24 px-6 bg-gradient-to-b from-neutral-900 to-neutral-950 border-t border-neutral-900">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -325,7 +333,6 @@ const Home = () => {
               <p className="text-neutral-400 text-lg mb-8 leading-relaxed">
                 We bridge the gap between passion and education. Our platform ensures safety, reliability, and speed so you can focus on what matters—learning.
               </p>
-              
               <div className="space-y-6">
                 {FEATURES.map((feat, idx) => (
                   <div key={idx} className="flex gap-4">
@@ -340,11 +347,9 @@ const Home = () => {
                 ))}
               </div>
             </div>
-            
             <div className="relative h-[500px] rounded-3xl bg-neutral-800 overflow-hidden border border-neutral-700/50">
               <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671&auto=format&fit=crop')] bg-cover bg-center opacity-50" />
               <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent" />
-              
               <div className="absolute bottom-8 left-8 right-8 p-6 rounded-2xl bg-neutral-900/80 backdrop-blur-md border border-neutral-700 shadow-2xl">
                 <p className="text-white italic">"This platform helped me find a tutor for my son within 2 days. Highly recommended!"</p>
                 <div className="mt-4 flex items-center gap-3">
@@ -360,27 +365,23 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 7. CTA SECTION */}
       <section className="py-20 px-6">
         <div className="max-w-5xl mx-auto text-center bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border border-purple-500/20 rounded-3xl p-12 relative overflow-hidden">
-           <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-           
-           <h2 className="relative z-10 text-3xl md:text-5xl font-bold text-white mb-6">Ready to Start Learning?</h2>
-           <p className="relative z-10 text-neutral-300 mb-8 text-lg max-w-2xl mx-auto">
-             Join thousands of students and tutors on the most reliable education platform in Bangladesh.
-           </p>
-           
-           <div className="relative z-10 flex flex-col sm:flex-row justify-center gap-4">
-             <Link to="/register" className="px-8 py-4 bg-white text-purple-900 font-bold rounded-xl hover:bg-neutral-100 transition-colors">
-               Get Started Now
-             </Link>
-             <Link to="/contact" className="px-8 py-4 bg-transparent border border-white/20 text-white font-semibold rounded-xl hover:bg-white/10 transition-colors">
-               Contact Support
-             </Link>
-           </div>
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+          <h2 className="relative z-10 text-3xl md:text-5xl font-bold text-white mb-6">Ready to Start Learning?</h2>
+          <p className="relative z-10 text-neutral-300 mb-8 text-lg max-w-2xl mx-auto">
+            Join thousands of students and tutors on the most reliable education platform in Bangladesh.
+          </p>
+          <div className="relative z-10 flex flex-col sm:flex-row justify-center gap-4">
+            <Link to="/register" className="px-8 py-4 bg-white text-purple-900 font-bold rounded-xl hover:bg-neutral-100 transition-colors">
+              Get Started Now
+            </Link>
+            <Link to="/contact" className="px-8 py-4 bg-transparent border border-white/20 text-white font-semibold rounded-xl hover:bg-white/10 transition-colors">
+              Contact Support
+            </Link>
+          </div>
         </div>
       </section>
-
     </div>
   );
 };

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useUserAuth } from "../context/AuthContext";
-import { Menu, X, User, Settings, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, User, LogOut, LayoutDashboard } from "lucide-react";
 
-// --- NAV LINKS ---
 const NAV_LINKS = [
     { name: "Home", path: "/" },
     { name: "Tuitions", path: "/tuitions" },
@@ -19,17 +18,33 @@ const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Scroll effect for sticky navbar
+    // Smooth scroll with RAF
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 20);
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
+        let ticking = false;
+        let rafId = null;
+
+        const updateScroll = () => {
+            setScrolled(window.scrollY > 20);
+            ticking = false;
+        };
+
+        const handleScroll = () => {
+            if (!ticking) {
+                rafId = requestAnimationFrame(updateScroll);
+                ticking = true;
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            if (rafId) cancelAnimationFrame(rafId);
+        };
     }, []);
 
-    // Close mobile menu on link click
     const closeMenu = () => setIsMobileMenuOpen(false);
 
-    // Handle Real Logout
     const handleLogout = async () => {
         try {
             await logOut();
@@ -39,7 +54,6 @@ const Navbar = () => {
         }
     };
 
-    // Render nav links
     const renderNavLinks = () =>
         NAV_LINKS.map((link) => (
             <li key={link.name}>
@@ -47,152 +61,150 @@ const Navbar = () => {
                     to={link.path}
                     onClick={closeMenu}
                     className={({ isActive }) =>
-                        `relative font-medium transition-all duration-300 group ${
+                        `px-3 py-2 rounded-lg font-medium transition-all duration-300 relative group hover:bg-primary/10 ${
                             isActive
-                                ? "text-primary"
-                                : "text-base-content/80 hover:text-primary"
+                                ? "text-primary bg-primary/20 shadow-md"
+                                : "text-neutral-300 hover:text-primary"
                         }`
                     }
                 >
                     {link.name}
-                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-4/5"></span>
                 </NavLink>
             </li>
         ));
 
     return (
-        <nav
-            className={`fixed top-0 w-full z-50 transition-all duration-300 border-b ${
-                scrolled
-                    ? "bg-base-100/80 backdrop-blur-xl border-base-200 shadow-sm py-3"
-                    : "bg-transparent border-transparent py-5"
-            }`}
-        >
-            <div className="container mx-auto px-6 flex items-center justify-between">
-                {/* --- LEFT: LOGO & MOBILE MENU --- */}
-                <div className="flex items-center gap-4">
-                    {/* Mobile menu button */}
-                    <button
-                        className="lg:hidden btn btn-ghost btn-circle p-2"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        aria-label="Toggle menu"
-                    >
-                        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
-
-                    {/* Brand */}
-                    <Link
-                        to="/"
-                        className="text-2xl font-black tracking-tight flex items-center gap-1"
-                    >
-                        <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                            eTuition
-                        </span>
-                        <span className="text-base-content">Bd</span>
-                    </Link>
-                </div>
-
-                {/* --- CENTER: DESKTOP LINKS --- */}
-                <ul className="hidden lg:flex gap-8 text-[15px]">{renderNavLinks()}</ul>
-
-                {/* --- RIGHT: AUTHENTICATION LOGIC --- */}
-                {user ? (
-                    /* STATE 1: USER IS LOGGED IN */
-                    <div className="flex items-center gap-3">
-                        {/* Dashboard Link */}
-                        <Link
-                            to="/dashboard"
-                            className="hidden md:flex btn btn-ghost btn-sm text-primary gap-2 font-normal"
+        <nav className="fixed top-0 w-full z-50 backdrop-blur-2xl border-b border-neutral-800/50 shadow-2xl">
+            {/* Always solid background with glass effect */}
+            <div className={`transition-all duration-500 ease-out py-4 ${
+                scrolled 
+                    ? "bg-neutral-950/95 shadow-xl" 
+                    : "bg-neutral-950/90"
+            }`}>
+                <div className="container mx-auto px-6 flex items-center justify-between">
+                    {/* LEFT: LOGO & MOBILE MENU */}
+                    <div className="flex items-center gap-4">
+                        <button
+                            className="lg:hidden p-2 rounded-xl bg-neutral-900/50 hover:bg-neutral-800/50 transition-all duration-300"
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            aria-label="Toggle menu"
                         >
-                            <LayoutDashboard size={18} />
-                            Dashboard
-                        </Link>
+                            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
 
-                        {/* User Dropdown */}
-                        <div className="dropdown dropdown-end">
-                            <button
-                                tabIndex={0}
-                                className="btn btn-ghost btn-circle avatar ring ring-primary/10 hover:ring-primary transition-all duration-300"
+                        <Link
+                            to="/"
+                            className="text-2xl font-black tracking-tight flex items-center gap-1 bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent hover:scale-105 transition-all duration-300"
+                        >
+                            eTuition<span className="text-white font-normal">Bd</span>
+                        </Link>
+                    </div>
+
+                    {/* CENTER: DESKTOP LINKS */}
+                    <ul className="hidden lg:flex items-center gap-2">
+                        {renderNavLinks()}
+                    </ul>
+
+                    {/* RIGHT: AUTH */}
+                    {user ? (
+                        <div className="flex items-center gap-3">
+                            <Link
+                                to="/dashboard"
+                                className="hidden md:flex items-center gap-2 px-4 py-2 bg-neutral-900/50 hover:bg-primary/10 border border-neutral-800/50 text-primary font-medium rounded-xl transition-all duration-300 hover:scale-105"
                             >
-                                <div className="w-10 rounded-full overflow-hidden">
-                                    {/* ✅ FIX: Use Firebase Photo URL or a robust placeholder */}
-                                    <img
-                                        alt="User Avatar"
-                                        src={user.photoURL || "https://placehold.co/100/purple/white?text=U"}
-                                    />
-                                </div>
-                            </button>
-                            <ul className="dropdown-content mt-3 p-2 shadow-2xl menu menu-sm bg-base-100 rounded-box w-56 gap-1 border border-base-200">
-                                <li className="menu-title px-4 py-2">
-                                    {user.displayName || "My Account"}
-                                </li>
-                                <li>
-                                    <Link to="/dashboard/profile" onClick={closeMenu} className="py-2 flex gap-3">
-                                        <User size={16} /> Profile
-                                    </Link>
-                                </li>
-                                <li>
-                                    <Link to="/dashboard" onClick={closeMenu} className="py-2 flex gap-3">
-                                        <LayoutDashboard size={16} /> Dashboard
-                                    </Link>
-                                </li>
-                                <div className="divider my-0"></div>
-                                <li>
-                                    <button
-                                        onClick={handleLogout} // Calls the actual logout function
-                                        className="py-2 text-error hover:bg-error/10 flex gap-3"
-                                    >
-                                        <LogOut size={16} /> Logout
-                                    </button>
-                                </li>
-                            </ul>
+                                <LayoutDashboard size={18} />
+                                Dashboard
+                            </Link>
+
+                            {/* User Dropdown */}
+                            <div className="dropdown dropdown-end">
+                                <button
+                                    tabIndex={0}
+                                    className="p-2 rounded-xl bg-neutral-900/50 hover:bg-neutral-800/50 ring-2 ring-neutral-700/50 hover:ring-primary/30 transition-all duration-300 hover:scale-105"
+                                >
+                                    <div className="w-10 h-10 rounded-2xl overflow-hidden ring-2 ring-white/20">
+                                        <img
+                                            alt="User Avatar"
+                                            src={user.photoURL || "https://placehold.co/100/purple/white?text=U"}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                </button>
+                                <ul className="dropdown-content mt-2 p-3 shadow-2xl bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-2xl w-56 space-y-1">
+                                    <li className="menu-title px-3 py-2 text-sm bg-neutral-900/50 rounded-xl">
+                                        {user.displayName || "My Account"}
+                                    </li>
+                                    <li>
+                                        <Link to="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-900/50 transition-colors">
+                                            <User size={18} /> Profile
+                                        </Link>
+                                    </li>
+                                    <li>
+                                        <Link to="/dashboard" onClick={closeMenu} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-900/50 transition-colors">
+                                            <LayoutDashboard size={18} /> Dashboard
+                                        </Link>
+                                    </li>
+                                    <div className="divider my-1 bg-neutral-800"></div>
+                                    <li>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center gap-3 p-3 text-error hover:bg-error/10 rounded-xl transition-all duration-200"
+                                        >
+                                            <LogOut size={18} /> Logout
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    /* STATE 2: USER IS LOGGED OUT */
-                    <div className="flex items-center gap-2">
-                        <Link to="/login" className="btn btn-ghost btn-sm hidden sm:inline-flex">
-                            Log In
-                        </Link>
-                        
-                        <Link
-                            to="/register"
-                            className="btn btn-primary btn-sm px-6 text-white shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105 transition-all duration-300"
-                        >
-                            Register
-                        </Link>
-                    </div>
-                )}
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            <Link 
+                                to="/login" 
+                                className="px-6 py-2.5 bg-neutral-900/50 hover:bg-neutral-800/50 border border-neutral-800/50 text-neutral-200 font-medium rounded-xl transition-all duration-300 hover:scale-105"
+                            >
+                                Log In
+                            </Link>
+                            <Link
+                                to="/register"
+                                className="px-8 py-2.5 bg-gradient-to-r from-primary to-purple-600 text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 active:scale-95 transition-all duration-300 hover:scale-105"
+                            >
+                                Register
+                            </Link>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* --- MOBILE MENU --- */}
+            {/* MOBILE MENU */}
             {isMobileMenuOpen && (
-                <ul className="lg:hidden mt-2 p-4 bg-base-100 border border-base-200 shadow-2xl rounded-xl flex flex-col gap-3 z-50 absolute w-[90%] left-[5%]">
-                    {renderNavLinks()}
-                    
-                    {/* Mobile Dashboard Link (Only if logged in) */}
-                    {user && (
-                        <li className="mt-2 pt-2 border-t border-base-200">
-                            <Link to="/dashboard" onClick={closeMenu} className="flex items-center gap-2 py-2 font-medium text-primary">
-                                <LayoutDashboard size={18} /> Dashboard
-                            </Link>
-                            <Link to="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-2 py-2 font-medium text-base-content/80 hover:text-primary">
-                                <User size={18} /> Profile
-                            </Link>
-                            <button onClick={handleLogout} className="flex items-center gap-2 py-2 font-medium text-error hover:bg-error/10 w-full rounded-lg">
-                                <LogOut size={18} /> Logout
-                            </button>
-                        </li>
-                    )}
-
-                    {/* Mobile Auth Buttons (Only if logged out) */}
-                    {!user && (
-                        <li className="mt-2 pt-2 border-t border-base-200 flex flex-col gap-2">
-                            <Link to="/login" onClick={closeMenu} className="btn btn-ghost btn-sm w-full">Log In</Link>
-                            <Link to="/register" onClick={closeMenu} className="btn btn-primary btn-sm w-full text-white">Register</Link>
-                        </li>
-                    )}
-                </ul>
+                <div className="lg:hidden mt-1 p-4 bg-neutral-950/95 backdrop-blur-xl border-t border-neutral-800/50 shadow-2xl rounded-b-2xl animate-in slide-in-from-top-2 duration-200">
+                    <ul className="space-y-2">
+                        {renderNavLinks()}
+                        {user ? (
+                            <>
+                                <li className="mt-4 pt-4 border-t border-neutral-800/50 space-y-2">
+                                    <Link to="/dashboard" onClick={closeMenu} className="flex items-center gap-3 p-3 bg-neutral-900/50 rounded-xl hover:bg-primary/10 text-primary font-medium transition-all">
+                                        <LayoutDashboard size={18} /> Dashboard
+                                    </Link>
+                                    <Link to="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-900/50 transition-all">
+                                        <User size={18} /> Profile
+                                    </Link>
+                                    <button onClick={handleLogout} className="w-full flex items-center gap-3 p-3 text-error hover:bg-error/10 rounded-xl transition-all">
+                                        <LogOut size={18} /> Logout
+                                    </button>
+                                </li>
+                            </>
+                        ) : (
+                            <li className="mt-4 pt-4 border-t border-neutral-800/50 space-y-2">
+                                <Link to="/login" onClick={closeMenu} className="block p-3 bg-neutral-900/50 hover:bg-neutral-800/50 rounded-xl transition-all">Log In</Link>
+                                <Link to="/register" onClick={closeMenu} className="block w-full p-3 bg-gradient-to-r from-primary to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-primary/50 transition-all">
+                                    Register
+                                </Link>
+                            </li>
+                        )}
+                    </ul>
+                </div>
             )}
         </nav>
     );
