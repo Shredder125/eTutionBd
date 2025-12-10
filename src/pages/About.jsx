@@ -1,5 +1,5 @@
-import React from "react";
-import { ShieldCheck, Users, Zap, DollarSign, Sparkles } from "lucide-react";
+import React, { useEffect } from "react";
+import { ShieldCheck, Users, Zap, IndianRupee, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 /* ANIMATION VARIANTS */
@@ -29,13 +29,34 @@ const styles = `
 `;
 
 const features = [
-  { icon: ShieldCheck, title: "Verified Tutors", description: "Every tutor profile is manually reviewed and verified by our admin team before they can apply to jobs." },
-  { icon: Users, title: "Role-Based Security", description: "Secure dashboards for students, tutors, and admins ensure targeted access and data integrity." },
-  { icon: Zap, title: "Fast Matching", description: "Our platform uses advanced filtering to connect students and tutors efficiently, minimizing wait times." },
-  { icon: DollarSign, title: "Secure Payments", description: "Seamless and secure financial transactions powered by Stripe." }
+  { 
+    icon: ShieldCheck, 
+    title: "Verified Tutors", 
+    description: "Every tutor profile is manually reviewed and verified by our admin team before they can apply to jobs." 
+  },
+  { 
+    icon: Users, 
+    title: "Role-Based Security", 
+    description: "Secure dashboards for students, tutors, and admins ensure targeted access and data integrity." 
+  },
+  { 
+    icon: Zap, 
+    title: "Fast Matching", 
+    description: "Our platform uses advanced filtering to connect students and tutors efficiently, minimizing wait times." 
+  },
+  { 
+    icon: IndianRupee, 
+    title: "Secure Payments", 
+    description: "Seamless and secure financial transactions powered by Razorpay and UPI." 
+  }
 ];
 
 const About = () => {
+  // Scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <>
       <style>{styles}</style>
@@ -58,10 +79,10 @@ const About = () => {
               whileHover={{ scale: 1.05 }}
               className="text-5xl md:text-6xl font-black shimmer-text inline-block"
             >
-              About eTuitionBd
+              About eTuitionIndia
             </motion.h1>
             <motion.p variants={fadeInUp} className="text-lg md:text-xl text-neutral-400 mt-4 max-w-3xl mx-auto">
-              Bridging the gap between reliable tutors and eager students across Bangladesh.
+              Bridging the gap between reliable tutors and eager students across India.
             </motion.p>
           </motion.div>
 

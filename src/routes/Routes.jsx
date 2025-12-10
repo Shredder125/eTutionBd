@@ -1,21 +1,19 @@
 import React from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom"; 
+import { createBrowserRouter, Navigate, ScrollRestoration } from "react-router-dom"; 
 import MainLayout from "../layout/MainLayout";
 import DashboardLayout from "../layout/DashboardLayout"; 
 import PrivateRoute from "./PrivateRoute"; 
 
-// Public Pages
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import AllTutors from "../pages/AllTutors";
 import Tuitions from "../pages/Tuitions";
 import TuitionDetails from "../pages/TuitionDetails"; 
-import TutorProfile from "../pages/TutorProfile"; // ✅ 1. NEW IMPORT
+import TutorProfile from "../pages/TutorProfile";
 import About from "../pages/About"; 
 import Contact from "../pages/Contact"; 
 
-// Dashboard Pages (Student)
 import PostTuition from "../pages/dashboard/PostTuition";
 import MyTuitions from "../pages/dashboard/MyTuitions"; 
 import AppliedTutors from "../pages/dashboard/AppliedTutors"; 
@@ -24,12 +22,10 @@ import PaymentHistory from "../pages/dashboard/PaymentHistory";
 import Payment from "../pages/dashboard/payment/Payment"; 
 import Profile from "../pages/dashboard/Profile";       
 
-// Dashboard Pages (Admin)
 import ManageTuitions from "../pages/dashboard/admin/ManageTuitions"; 
 import ManageUsers from "../pages/dashboard/admin/ManageUsers";
 import AdminStats from "../pages/dashboard/admin/AdminStats";
 
-// Dashboard Pages (Tutor)
 import MyApplications from "../pages/dashboard/tutor/MyApplications";
 import TutorRevenue from "../pages/dashboard/tutor/TutorRevenue";
 import OngoingTuitions from "../pages/dashboard/tutor/OngoingTuitions"; 
@@ -37,7 +33,12 @@ import OngoingTuitions from "../pages/dashboard/tutor/OngoingTuitions";
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <>
+        <ScrollRestoration />
+        <MainLayout />
+      </>
+    ),
     errorElement: <div className="h-screen bg-black text-white flex items-center justify-center">404 - Page Not Found</div>,
     children: [
       {
@@ -56,7 +57,6 @@ export const router = createBrowserRouter([
         path: "/tuition/:id",
         element: <TuitionDetails />,
       },
-      // ✅ 2. ADDED TUTOR PROFILE ROUTE
       {
         path: "/tutor/:id",
         element: <TutorProfile />,
@@ -74,9 +74,12 @@ export const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: (
-      <PrivateRoute>
-        <DashboardLayout />
-      </PrivateRoute>
+      <>
+        <ScrollRestoration />
+        <PrivateRoute>
+          <DashboardLayout />
+        </PrivateRoute>
+      </>
     ),
     children: [
       { 
@@ -139,10 +142,20 @@ export const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <Login />,
+    element: (
+      <>
+        <ScrollRestoration />
+        <Login />
+      </>
+    ),
   },
   {
     path: "/register",
-    element: <Register />,
+    element: (
+      <>
+        <ScrollRestoration />
+        <Register />
+      </>
+    ),
   },
 ]);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, Phone, MapPin, Send, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -30,6 +30,11 @@ const styles = `
 
 const Contact = () => {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+
+  // Scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -81,7 +86,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="font-medium text-white">Email Support</p>
-                  <a href="mailto:support@etuitionbd.com" className="text-violet-400 hover:underline">support@etuitionbd.com</a>
+                  <a href="mailto:support@etuitionindia.com" className="text-violet-400 hover:underline">support@etuitionbd.com</a>
                 </div>
               </div>
 
@@ -91,7 +96,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="font-medium text-white">Phone/WhatsApp</p>
-                  <a href="tel:+8801XXXXXXXXX" className="text-violet-400 hover:underline">+880 1XXXXXXXXX</a>
+                  <a href="tel:+919XXXXXXXXX" className="text-violet-400 hover:underline">+91 9XXXXXXXXX</a>
                 </div>
               </div>
 
@@ -101,7 +106,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <p className="font-medium text-white">Office Location</p>
-                  <p className="text-neutral-400">Dhaka, Bangladesh</p>
+                  <p className="text-neutral-400">New Delhi, India</p>
                 </div>
               </div>
             </motion.div>
