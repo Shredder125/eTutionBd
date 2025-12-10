@@ -1,10 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { useUserAuth } from "../context/AuthContext";
-import { MapPin, BookOpen, DollarSign, Search, Loader2, Clock, Send, GraduationCap, Filter } from "lucide-react";
-import Swal from "sweetalert2";
+import { motion } from "framer-motion";
+import { MapPin, BookOpen, DollarSign, Search, Loader2, Clock, Send, GraduationCap, Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
+
+// Mock Auth Context (replace with your actual context)
+const useUserAuth = () => ({ user: null });
 
 // Define Classes for Filter Dropdown
 const CLASS_OPTIONS = ["Class 1-5", "Class 6-8", "Class 9-10", "HSC 1st Year", "A Level", "University"];
+
+/* STYLES */
+const styles = `
+  @keyframes shimmer {
+    0% { background-position: -100% 0; }
+    100% { background-position: 200% 0; }
+  }
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+    50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.5); }
+  }
+  .shimmer-bg {
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+`;
+
+/* ANIMATION VARIANTS */
+const fadeInUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
 
 const Tuitions = () => {
   const { user } = useUserAuth();
@@ -14,10 +44,10 @@ const Tuitions = () => {
   
   // States for Pagination and Filtering
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(0); // Current page index (starts at 0)
+  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0); 
-  const [selectedClass, setSelectedClass] = useState(""); // State for class filter
-  const limit = 6; // Posts per page
+  const [selectedClass, setSelectedClass] = useState("");
+  const limit = 6;
 
   // State for Modal & Form
   const [selectedTuition, setSelectedTuition] = useState(null);
@@ -27,312 +57,347 @@ const Tuitions = () => {
     qualifications: ""
   });
 
-  // 1. Fetch Tuitions & User Role (Includes Pagination & Filters)
+  // Mock data for demonstration
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        // Build query string with pagination and filters
-        const classQuery = selectedClass ? `&class=${selectedClass}` : "";
-        // CRITICAL: Using /api for deployment readiness
-        const url = `/api/tuitions?search=${searchTerm}&page=${currentPage}&limit=${limit}${classQuery}`; 
-
-        // Fetch Tuitions
-        const token = localStorage.getItem("access-token");
-        const res = await fetch(url, {
-             headers: { authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        setTuitions(data.result || []);
-        setTotalPages(Math.ceil(data.total / limit)); // Calculate total pages
-        
-        // Fetch Role (Only if user is logged in)
-        if (user?.email) {
-            const roleRes = await fetch(`/api/users/${user.email}`, {
-                headers: { authorization: `Bearer ${token}` }
-            });
-            const roleData = await roleRes.json();
-            setRole(roleData.role);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [searchTerm, user, currentPage, selectedClass]); // Dependency array includes pagination/filters
-
-  // Handle Application Submit (Unchanged logic)
-  const handleApplySubmit = async (e) => {
-    e.preventDefault();
+    const mockTuitions = [
+      { _id: 1, subject: "Mathematics", classGrade: "Class 10", location: "Dhanmondi, Dhaka", daysPerWeek: "4", budget: "8000", createdAt: new Date(), studentEmail: "student@example.com" },
+      { _id: 2, subject: "Physics", classGrade: "HSC 1st Year", location: "Gulshan, Dhaka", daysPerWeek: "3", budget: "10000", createdAt: new Date(), studentEmail: "student2@example.com" },
+      { _id: 3, subject: "English", classGrade: "Class 8", location: "Uttara, Dhaka", daysPerWeek: "5", budget: "6000", createdAt: new Date(), studentEmail: "student3@example.com" },
+      { _id: 4, subject: "Chemistry", classGrade: "A Level", location: "Banani, Dhaka", daysPerWeek: "4", budget: "12000", createdAt: new Date(), studentEmail: "student4@example.com" },
+      { _id: 5, subject: "Biology", classGrade: "Class 9-10", location: "Mirpur, Dhaka", daysPerWeek: "3", budget: "7000", createdAt: new Date(), studentEmail: "student5@example.com" },
+      { _id: 6, subject: "Bengali", classGrade: "Class 1-5", location: "Mohammadpur, Dhaka", daysPerWeek: "2", budget: "5000", createdAt: new Date(), studentEmail: "student6@example.com" },
+    ];
     
-    if (!user) return Swal.fire("Login Required", "Please login first.", "warning");
+    setTimeout(() => {
+      setTuitions(mockTuitions);
+      setTotalPages(2);
+      setRole('tutor');
+      setLoading(false);
+    }, 1000);
+  }, [searchTerm, currentPage, selectedClass]);
 
-    const applicationData = {
-      tuitionId: selectedTuition._id,
-      studentEmail: selectedTuition.studentEmail,
-      tutorEmail: user.email,
-      tutorName: user.displayName || "Unknown Tutor",
-      expectedSalary: applyForm.expectedSalary,
-      experience: applyForm.experience,
-      qualifications: applyForm.qualifications,
-      date: new Date()
-    };
-
-    try {
-      const token = localStorage.getItem("access-token");
-      // CRITICAL: Using /api for deployment readiness
-      const res = await fetch("/api/applications", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(applicationData)
-      });
-      
-      const data = await res.json();
-
-      if (res.status === 400) {
-        Swal.fire("Already Applied", "You have already applied to this job.", "info");
-      } else if (data.insertedId) {
-        Swal.fire("Success!", "Application submitted successfully.", "success");
-        setSelectedTuition(null); 
-        setApplyForm({ expectedSalary: "", experience: "", qualifications: "" }); 
-      } else {
-        Swal.fire("Error", "Failed to submit application.", "error");
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "Something went wrong.", "error");
-    }
+  const handleApplySubmit = (e) => {
+    e.preventDefault();
+    alert("Application submitted successfully!");
+    setSelectedTuition(null);
+    setApplyForm({ expectedSalary: "", experience: "", qualifications: "" });
   };
 
-  // Handler for class filter change
   const handleClassChange = (e) => {
     setSelectedClass(e.target.value);
-    setCurrentPage(0); // Reset page to 0 when filter changes
+    setCurrentPage(0);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Header & Search */}
-        <div className="text-center mb-12 space-y-4">
-          <h1 className="text-4xl font-bold text-gray-800">Available Tuitions</h1>
-          <p className="text-gray-500 max-w-2xl mx-auto">Find the perfect student and start teaching today.</p>
+    <>
+      <style>{styles}</style>
+      <div className="min-h-screen bg-black text-neutral-100 py-16 px-4 sm:px-6 relative overflow-hidden">
+        {/* Background Effects */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-30">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-violet-600 rounded-full blur-[150px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-600 rounded-full blur-[150px]" />
         </div>
 
-        {/* Search & Filter Bar */}
-        <div className="flex flex-col md:flex-row gap-4 mb-12 max-w-4xl mx-auto">
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px)',
+            backgroundSize: '50px 50px'
+          }} />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          
+          {/* Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12 space-y-4"
+          >
+            <h1 className="text-5xl md:text-6xl font-black text-white">
+              Available <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">Tuitions</span>
+            </h1>
+            <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
+              Find the perfect student and start teaching today.
+            </p>
+          </motion.div>
+
+          {/* Search & Filter Bar */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col md:flex-row gap-4 mb-12 max-w-4xl mx-auto"
+          >
             {/* Search Input */}
             <div className="relative flex-1">
-                <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
-                <input 
-                  type="text" 
-                  placeholder="Search by Subject or Location..." 
-                  className="input input-bordered w-full pl-12 rounded-full shadow-sm focus:input-primary"
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(0); // Reset page on search
-                  }}
-                />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" size={20} />
+              <input 
+                type="text" 
+                placeholder="Search by Subject or Location..." 
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-neutral-900/70 border-2 border-neutral-800 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all"
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(0);
+                }}
+              />
             </div>
+
             {/* Class Filter Dropdown */}
-            <div className="relative min-w-[200px]">
-                <Filter className="absolute left-3 top-3.5 text-gray-400" size={20} />
-                <select 
-                    className="select select-bordered w-full pl-10 rounded-full shadow-sm focus:select-primary"
-                    value={selectedClass}
-                    onChange={handleClassChange}
-                >
-                    <option value="">Filter by Class</option>
-                    {CLASS_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+            <div className="relative min-w-[220px]">
+              <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500" size={20} />
+              <select 
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-neutral-900/70 border-2 border-neutral-800 text-white focus:border-violet-500/50 focus:outline-none transition-all appearance-none cursor-pointer"
+                value={selectedClass}
+                onChange={handleClassChange}
+              >
+                <option value="">All Classes</option>
+                {CLASS_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
             </div>
+          </motion.div>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="flex justify-center py-20">
+              <Loader2 className="animate-spin h-12 w-12 text-violet-500" />
+            </div>
+          )}
+
+          {/* Tuitions Grid */}
+          {!loading && (
+            <>
+              {tuitions.length === 0 ? (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-20 bg-neutral-900/50 border border-neutral-800 rounded-2xl"
+                >
+                  <p className="text-neutral-400 text-lg">No tuitions found matching your criteria.</p>
+                </motion.div>
+              ) : (
+                <motion.div 
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                  className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+                >
+                  {tuitions.map((item) => (
+                    <motion.div 
+                      key={item._id}
+                      variants={fadeInUp}
+                      whileHover={{ y: -8, scale: 1.02 }}
+                      className="relative bg-neutral-900/70 border-2 border-neutral-800 hover:border-violet-500/50 rounded-2xl p-6 transition-all duration-300 group overflow-hidden"
+                    >
+                      {/* Shimmer effect on hover */}
+                      <div className="absolute inset-0 shimmer-bg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+                      <div className="relative z-10">
+                        <div className="flex justify-between items-start mb-4">
+                          <span className="px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/30 text-violet-400 text-xs font-bold">
+                            {item.classGrade}
+                          </span>
+                          <span className="text-xs text-neutral-500">
+                            {new Date(item.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        
+                        <h2 className="text-2xl font-bold text-white mb-4 group-hover:text-violet-400 transition-colors">
+                          {item.subject}
+                        </h2>
+                        
+                        <div className="space-y-3 mb-6 text-neutral-400 text-sm">
+                          <div className="flex items-center gap-2">
+                            <MapPin size={16} className="text-violet-400" />
+                            <span>{item.location}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock size={16} className="text-violet-400" />
+                            <span>{item.daysPerWeek} Days / Week</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <DollarSign size={16} className="text-emerald-400" />
+                            <span className="font-bold text-white">{item.budget} BDT</span>
+                            <span>/ month</span>
+                          </div>
+                        </div>
+
+                        {/* Button */}
+                        {role === 'tutor' ? (
+                          <motion.button 
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => setSelectedTuition(item)}
+                            className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:from-violet-500 hover:to-fuchsia-500 transition-all"
+                          >
+                            Apply Now
+                          </motion.button>
+                        ) : (
+                          <button 
+                            disabled 
+                            className="w-full py-3 rounded-xl bg-neutral-800 text-neutral-500 font-semibold cursor-not-allowed"
+                          >
+                            {user ? "Login as Tutor to Apply" : "Login to Apply"}
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+              
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="flex justify-center mt-12"
+                >
+                  <div className="flex items-center gap-2 bg-neutral-900/70 border border-neutral-800 rounded-xl p-2">
+                    {/* Previous Button */}
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                      disabled={currentPage === 0}
+                    >
+                      <ChevronLeft size={20} />
+                    </motion.button>
+                    
+                    {/* Page Numbers */}
+                    {[...Array(totalPages)].map((_, index) => (
+                      <motion.button 
+                        key={index}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                          index === currentPage 
+                            ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white' 
+                            : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+                        }`}
+                        onClick={() => setCurrentPage(index)}
+                      >
+                        {index + 1}
+                      </motion.button>
+                    ))}
+
+                    {/* Next Button */}
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+                      disabled={currentPage === totalPages - 1}
+                    >
+                      <ChevronRight size={20} />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
+            </>
+          )}
         </div>
 
-        {/* Loading State */}
-        {loading && (
-          <div className="flex justify-center py-20">
-            <Loader2 className="animate-spin h-10 w-10 text-primary" />
+        {/* Application Modal */}
+        {selectedTuition && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-neutral-900 border-2 border-neutral-800 rounded-2xl max-w-md w-full p-6 relative"
+            >
+              {/* Close button */}
+              <button 
+                onClick={() => setSelectedTuition(null)}
+                className="absolute top-4 right-4 p-2 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white transition-all"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/30">
+                  <GraduationCap className="text-violet-400" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Apply for {selectedTuition.subject}</h3>
+                  <p className="text-sm text-neutral-400">Provide your details below</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4 mt-6">
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                    Your Qualifications
+                  </label>
+                  <input 
+                    type="text" 
+                    required 
+                    placeholder="e.g. B.Sc in Mathematics, BUET"
+                    className="w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all"
+                    value={applyForm.qualifications}
+                    onChange={e => setApplyForm({...applyForm, qualifications: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                    Teaching Experience
+                  </label>
+                  <input 
+                    type="text" 
+                    required 
+                    placeholder="e.g. 3 years of experience"
+                    className="w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all"
+                    value={applyForm.experience}
+                    onChange={e => setApplyForm({...applyForm, experience: e.target.value})}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-neutral-300 mb-2">
+                    Expected Salary (BDT)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">৳</span>
+                    <input 
+                      type="number" 
+                      required 
+                      placeholder="e.g. 5000"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all"
+                      value={applyForm.expectedSalary}
+                      onChange={e => setApplyForm({...applyForm, expectedSalary: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button" 
+                    className="flex-1 py-3 rounded-xl bg-neutral-800 text-white font-semibold hover:bg-neutral-700 transition-all" 
+                    onClick={() => setSelectedTuition(null)}
+                  >
+                    Cancel
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleApplySubmit}
+                    className="flex-1 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:from-violet-500 hover:to-fuchsia-500 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Send size={16} />
+                    Submit
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        )}
-
-        {/* Tuitions Grid (Full Rendering Logic Added) */}
-        {!loading && (
-          <>
-            {tuitions.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
-                    <p className="text-gray-500 text-lg">No approved tuitions found matching your criteria.</p>
-                </div>
-            ) : (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {tuitions.map((item) => (
-                        <div key={item._id} className="card bg-white border border-gray-100 hover:shadow-xl transition-all duration-300 group">
-                            <div className="card-body">
-                                <div className="flex justify-between items-start">
-                                    <div className="badge badge-primary badge-outline font-semibold">{item.classGrade}</div>
-                                    <span className="text-xs text-gray-400 font-medium bg-gray-50 px-2 py-1 rounded-full">
-                                        {new Date(item.createdAt).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                
-                                <h2 className="card-title text-xl text-gray-800 mt-2 group-hover:text-primary transition-colors">
-                                    {item.subject}
-                                </h2>
-                                
-                                <div className="space-y-3 my-4 text-gray-600 text-sm">
-                                    <div className="flex items-center gap-2">
-                                        <MapPin size={16} className="text-primary" /> {item.location}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Clock size={16} className="text-primary" /> {item.daysPerWeek} Days / Week
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <DollarSign size={16} className="text-primary" /> 
-                                        <span className="font-bold text-gray-800">{item.budget} BDT</span> / month
-                                    </div>
-                                </div>
-
-                                <div className="card-actions justify-end mt-4">
-                                    {/* BUTTON LOGIC: Only Tutors can Apply */}
-                                    {role === 'tutor' ? (
-                                        <button 
-                                            onClick={() => setSelectedTuition(item)}
-                                            className="btn btn-primary w-full text-white shadow-md shadow-primary/20"
-                                        >
-                                            Apply Now
-                                        </button>
-                                    ) : (
-                                        <button disabled className="btn btn-ghost bg-gray-100 text-gray-400 w-full cursor-not-allowed">
-                                            {user ? "Login as Tutor to Apply" : "Login to Apply"}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            )}
-            
-            {/* --- PAGINATION CONTROLS --- */}
-            {totalPages > 1 && (
-                <div className="flex justify-center mt-12">
-                    <div className="join shadow-md">
-                        {/* Previous Button */}
-                        <button 
-                            className="join-item btn btn-ghost"
-                            onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
-                            disabled={currentPage === 0}
-                        >
-                            «
-                        </button>
-                        
-                        {/* Page Numbers (Displaying up to 5 surrounding pages) */}
-                        {[...Array(totalPages)].map((_, index) => {
-                            if (index < 2 || index >= totalPages - 2 || (index >= currentPage - 1 && index <= currentPage + 1)) {
-                                return (
-                                    <button 
-                                        key={index}
-                                        className={`join-item btn ${index === currentPage ? 'btn-active btn-primary text-white' : 'btn-ghost'}`}
-                                        onClick={() => setCurrentPage(index)}
-                                    >
-                                        {index + 1}
-                                    </button>
-                                );
-                            } else if (index === 2 || index === totalPages - 3) {
-                                return <button key={index} className="join-item btn btn-ghost" disabled>...</button>;
-                            }
-                            return null;
-                        }).filter((item, index, self) => item !== null && self.findIndex(t => t?.key === item?.key) === index)}
-
-                        {/* Next Button */}
-                        <button 
-                            className="join-item btn btn-ghost"
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
-                            disabled={currentPage === totalPages - 1}
-                        >
-                            »
-                        </button>
-                    </div>
-                </div>
-            )}
-          </>
         )}
       </div>
-
-      {/* --- APPLICATION MODAL --- */}
-      {selectedTuition && (
-        <dialog className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg text-primary flex items-center gap-2">
-                <GraduationCap /> Apply for {selectedTuition.subject}
-            </h3>
-            <p className="py-2 text-sm text-gray-500">Please provide your details below to apply.</p>
-            
-            <form onSubmit={handleApplySubmit} className="space-y-4 mt-4">
-                <div className="form-control">
-                    <label className="label"><span className="label-text font-medium">Your Qualifications</span></label>
-                    <input 
-                        type="text" 
-                        required 
-                        placeholder="e.g. B.Sc in Mathematics, BUET"
-                        className="input input-bordered focus:input-primary"
-                        value={applyForm.qualifications}
-                        onChange={e => setApplyForm({...applyForm, qualifications: e.target.value})}
-                    />
-                </div>
-
-                <div className="form-control">
-                    <label className="label"><span className="label-text font-medium">Teaching Experience</span></label>
-                    <input 
-                        type="text" 
-                        required 
-                        placeholder="e.g. 3 years of experience"
-                        className="input input-bordered focus:input-primary"
-                        value={applyForm.experience}
-                        onChange={e => setApplyForm({...applyForm, experience: e.target.value})}
-                    />
-                </div>
-
-                <div className="form-control">
-                    <label className="label"><span className="label-text font-medium">Expected Salary (BDT)</span></label>
-                    <div className="relative">
-                        <span className="absolute left-3 top-3.5 text-gray-400">৳</span>
-                        <input 
-                            type="number" 
-                            required 
-                            placeholder="e.g. 5000"
-                            className="input input-bordered w-full pl-8 focus:input-primary"
-                            value={applyForm.expectedSalary}
-                            onChange={e => setApplyForm({...applyForm, expectedSalary: e.target.value})}
-                        />
-                    </div>
-                </div>
-
-                <div className="modal-action">
-                    <button 
-                        type="button" 
-                        className="btn btn-ghost" 
-                        onClick={() => setSelectedTuition(null)}
-                    >
-                        Cancel
-                    </button>
-                    <button type="submit" className="btn btn-primary text-white">
-                        <Send size={16} className="mr-2" /> Submit Application
-                    </button>
-                </div>
-            </form>
-          </div>
-          <div className="modal-backdrop" onClick={() => setSelectedTuition(null)}></div>
-        </dialog>
-      )}
-
-    </div>
+    </>
   );
 };
 
