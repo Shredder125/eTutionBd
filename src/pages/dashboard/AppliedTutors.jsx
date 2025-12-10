@@ -10,12 +10,10 @@ const AppliedTutors = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); 
 
-  // Fetch received applications
   useEffect(() => {
     const fetchApplications = async () => {
       try {
         if (!user?.email) return;
-
         const token = localStorage.getItem("access-token");
         if (!token) return;
 
@@ -29,12 +27,7 @@ const AppliedTutors = () => {
         }
 
         const data = await res.json();
-        
-        if (Array.isArray(data)) {
-          setApplications(data);
-        } else {
-          setApplications([]);
-        }
+        setApplications(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching applications:", error);
       } finally {
@@ -45,50 +38,48 @@ const AppliedTutors = () => {
     fetchApplications();
   }, [user]);
 
-  // Handle Reject
   const handleReject = async (id) => {
     Swal.fire({
-        title: "Reject Tutor?",
-        text: "You cannot undo this action.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#ef4444",
-        confirmButtonText: "Yes, Reject"
+      title: "Reject Tutor?",
+      text: "You cannot undo this action.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      confirmButtonText: "Yes, Reject"
     }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-                const token = localStorage.getItem("access-token");
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/applications/reject/${id}`, {
-                    method: "PATCH",
-                    headers: { authorization: `Bearer ${token}` },
-                });
-                const data = await res.json();
-                if (data.modifiedCount > 0) {
-                    setApplications(prev => prev.map(app => 
-                        app._id === id ? { ...app, status: 'rejected' } : app
-                    ));
-                    Swal.fire("Rejected", "Application has been rejected.", "success");
-                }
-            } catch (error) {
-                console.error("Error rejecting:", error);
-            }
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem("access-token");
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/applications/reject/${id}`, {
+            method: "PATCH",
+            headers: { authorization: `Bearer ${token}` },
+          });
+          const data = await res.json();
+          if (data.modifiedCount > 0) {
+            setApplications(prev => prev.map(app => 
+              app._id === id ? { ...app, status: 'rejected' } : app
+            ));
+            Swal.fire("Rejected", "Application has been rejected.", "success");
+          }
+        } catch (error) {
+          console.error("Error rejecting:", error);
         }
+      }
     });
   };
 
-  // Handle Approve (Redirect to Payment)
   const handleApprove = (app) => {
     Swal.fire({
-        title: "Hire this Tutor?",
-        text: `To hire ${app.tutorName}, you need to pay the first month's salary of ৳${app.expectedSalary}.`,
-        icon: "info",
-        showCancelButton: true,
-        confirmButtonText: "Proceed to Payment",
-        confirmButtonColor: "#10b981"
+      title: "Hire this Tutor?",
+      text: `To hire ${app.tutorName}, you need to pay the first month's salary of ৳${app.expectedSalary}.`,
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonText: "Proceed to Payment",
+      confirmButtonColor: "#10b981"
     }).then((result) => {
-        if (result.isConfirmed) {
-            navigate("/dashboard/payment", { state: { application: app } });
-        }
+      if (result.isConfirmed) {
+        navigate("/dashboard/payment", { state: { application: app } });
+      }
     });
   };
 
@@ -115,12 +106,10 @@ const AppliedTutors = () => {
           {applications.map((app) => (
             <div key={app._id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
               
-              {/* Status Banner Line */}
               <div className={`absolute top-0 left-0 w-1 h-full 
                 ${app.status === 'approved' ? 'bg-green-500' : app.status === 'rejected' ? 'bg-red-500' : 'bg-yellow-500'}`}>
               </div>
 
-              {/* Header */}
               <div className="pl-2">
                 <div className="flex justify-between items-start mb-4">
                     <div>
@@ -136,7 +125,6 @@ const AppliedTutors = () => {
                     </span>
                 </div>
 
-                {/* Details Box */}
                 <div className="bg-gray-50 p-4 rounded-xl space-y-3 mb-4 border border-gray-100">
                     <div className="flex items-center gap-2 text-sm text-gray-700">
                         <BookOpen size={16} className="text-primary" /> 
@@ -157,7 +145,6 @@ const AppliedTutors = () => {
                 </div>
               </div>
 
-              {/* Actions */}
               {app.status === 'pending' && (
                   <div className="flex gap-3 mt-2 pl-2">
                     <button 

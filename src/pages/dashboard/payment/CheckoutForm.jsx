@@ -185,12 +185,12 @@ const CheckoutForm = ({ application }) => {
         </div>
       </div>
 
-      {/* Test Card Notice */}
+      {/* Test Card Notice
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
         <p className="text-xs text-blue-800 font-medium mb-1">🧪 Test Mode</p>
         <p className="text-xs text-blue-700">Use card: 4242 4242 4242 4242</p>
         <p className="text-xs text-blue-600">Any future date & CVC</p>
-      </div>
+      </div> */}
 
       {/* Error Message */}
       {error && (
