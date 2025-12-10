@@ -12,7 +12,7 @@ const NAV_LINKS = [
 ];
 
 const Navbar = () => {
-    const { user, logOut } = useUserAuth(); 
+    const { user, userProfile, logOut } = useUserAuth(); // ✅ Use userProfile
     const navigate = useNavigate();
 
     const [scrolled, setScrolled] = useState(false);
@@ -72,6 +72,10 @@ const Navbar = () => {
             </li>
         ));
 
+    // ✅ Determine which photoURL to use: MongoDB first, then Firebase, then placeholder
+    const photoURL = userProfile?.photoURL || user?.photoURL || "https://placehold.co/100/0f172a/06b6d4?text=U";
+    const displayName = userProfile?.name || user?.displayName || "My Account";
+
     return (
         <nav className="fixed top-0 w-full z-50 backdrop-blur-lg border-b border-cyan-500/30">
             <div className={`transition-all duration-300 ${
@@ -123,14 +127,14 @@ const Navbar = () => {
                                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg overflow-hidden border border-cyan-500/50">
                                         <img
                                             alt="User Avatar"
-                                            src={user.photoURL || "https://placehold.co/100/0f172a/06b6d4?text=U"}
+                                            src={photoURL}
                                             className="w-full h-full object-cover"
                                         />
                                     </div>
                                 </button>
                                 <ul className="dropdown-content mt-3 p-3 bg-black/95 backdrop-blur-lg border border-cyan-500/30 rounded-lg w-56 space-y-2 shadow-2xl shadow-cyan-500/20">
                                     <li className="px-4 py-2 text-sm font-bold text-cyan-400 bg-cyan-500/10 rounded-lg border border-cyan-500/30 truncate">
-                                        {user.displayName || "My Account"}
+                                        {displayName}
                                     </li>
                                     <li>
                                         <Link to="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-3 p-2 rounded-lg hover:bg-cyan-500/20 text-gray-300 hover:text-cyan-300 transition-colors font-semibold border border-transparent hover:border-cyan-500/30">
@@ -155,7 +159,6 @@ const Navbar = () => {
                             </div>
                         </div>
                     ) : (
-                        // Hidden on mobile (lg:flex), relying on Mobile Menu instead
                         <div className="hidden lg:flex items-center gap-3">
                             <Link 
                                 to="/login" 

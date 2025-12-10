@@ -79,7 +79,7 @@ const About = () => {
               whileHover={{ scale: 1.05 }}
               className="text-5xl md:text-6xl font-black shimmer-text inline-block"
             >
-              About eTuitionIndia
+              About eTuitionBD
             </motion.h1>
             <motion.p variants={fadeInUp} className="text-lg md:text-xl text-neutral-400 mt-4 max-w-3xl mx-auto">
               Bridging the gap between reliable tutors and eager students across India.

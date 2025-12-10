@@ -55,6 +55,7 @@ const Tuitions = () => {
     experience: "",
     qualifications: ""
   });
+  const [applyLoading, setApplyLoading] = useState(false);
 
   // 1. Fetch Data
   useEffect(() => {
@@ -114,7 +115,7 @@ const Tuitions = () => {
   const offset = currentPage * itemsPerPage;
   const currentItems = filteredTuitions.slice(offset, offset + itemsPerPage);
 
-  // 4. Handle Apply
+  // 4. Handle Apply Submit ✅ FIXED
   const handleApplySubmit = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -122,22 +123,19 @@ const Tuitions = () => {
         return;
     }
 
+    // ✅ CRITICAL FIX: Only send essential data, let backend do the lookup
     const applicationData = {
-        tuitionId: selectedTuition._id,
+        tuitionId: selectedTuition._id.toString(), // ✅ Convert to string
         tutorEmail: user.email,
-        tutorName: user.displayName,
-        studentEmail: selectedTuition.studentEmail,
+        tutorName: user.displayName || "Anonymous Tutor",
         expectedSalary: parseInt(applyForm.expectedSalary),
         experience: applyForm.experience,
         qualifications: applyForm.qualifications,
-        tuitionData: { 
-            subject: selectedTuition.subject,
-            location: selectedTuition.location,
-            studentEmail: selectedTuition.studentEmail
-        },
         status: 'pending',
         appliedAt: new Date()
     };
+
+    setApplyLoading(true);
 
     try {
         const token = localStorage.getItem("access-token");
@@ -165,7 +163,10 @@ const Tuitions = () => {
             Swal.fire("Error", data.message || "Failed to apply", "error");
         }
     } catch (error) {
+        console.error("Apply error:", error);
         Swal.fire("Error", "Network error occurred", "error");
+    } finally {
+        setApplyLoading(false);
     }
   };
 
@@ -286,7 +287,7 @@ const Tuitions = () => {
             </>
           )}
 
-          {/* Modal code remains same as provided... */}
+          {/* Apply Modal ✅ FIXED */}
           {selectedTuition && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-neutral-900 border-2 border-neutral-800 rounded-2xl max-w-md w-full p-6 relative shadow-2xl shadow-violet-900/20">
@@ -295,15 +296,66 @@ const Tuitions = () => {
                         <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/30"><GraduationCap className="text-violet-400" size={24} /></div>
                         <div><h3 className="text-xl font-bold text-white">Apply for {selectedTuition.subject}</h3><p className="text-sm text-neutral-400">Provide your details below</p></div>
                     </div>
-                    <div className="space-y-4 mt-6">
-                        <div><label className="block text-sm font-semibold text-neutral-300 mb-2">Your Qualifications</label><input type="text" required placeholder="e.g. B.Sc in Mathematics, BUET" className="w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all" value={applyForm.qualifications} onChange={e => setApplyForm({...applyForm, qualifications: e.target.value})} /></div>
-                        <div><label className="block text-sm font-semibold text-neutral-300 mb-2">Teaching Experience</label><input type="text" required placeholder="e.g. 3 years of experience" className="w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all" value={applyForm.experience} onChange={e => setApplyForm({...applyForm, experience: e.target.value})} /></div>
-                        <div><label className="block text-sm font-semibold text-neutral-300 mb-2">Expected Salary (BDT)</label><div className="relative"><span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">৳</span><input type="number" required placeholder={`Around ${selectedTuition.budget}`} className="w-full pl-10 pr-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all" value={applyForm.expectedSalary} onChange={e => setApplyForm({...applyForm, expectedSalary: e.target.value})} /></div></div>
-                        <div className="flex gap-3 mt-6">
-                            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} type="button" className="flex-1 py-3 rounded-xl bg-neutral-800 text-white font-semibold hover:bg-neutral-700 transition-all border border-neutral-700" onClick={() => setSelectedTuition(null)}>Cancel</motion.button>
-                            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleApplySubmit} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:from-violet-500 hover:to-fuchsia-500 transition-all flex items-center justify-center gap-2 shadow-lg"><Send size={16} /> Submit</motion.button>
+                    <form onSubmit={handleApplySubmit} className="space-y-4 mt-6">
+                        <div>
+                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Your Qualifications</label>
+                            <input 
+                                type="text" 
+                                required 
+                                placeholder="e.g. B.Sc in Mathematics, BUET" 
+                                className="w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all" 
+                                value={applyForm.qualifications} 
+                                onChange={e => setApplyForm({...applyForm, qualifications: e.target.value})} 
+                            />
                         </div>
-                    </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Teaching Experience</label>
+                            <input 
+                                type="text" 
+                                required 
+                                placeholder="e.g. 3 years of experience" 
+                                className="w-full px-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all" 
+                                value={applyForm.experience} 
+                                onChange={e => setApplyForm({...applyForm, experience: e.target.value})} 
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-neutral-300 mb-2">Expected Salary (BDT)</label>
+                            <div className="relative">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">৳</span>
+                                <input 
+                                    type="number" 
+                                    required 
+                                    placeholder={`Around ${selectedTuition.budget}`} 
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 focus:border-violet-500/50 focus:outline-none transition-all" 
+                                    value={applyForm.expectedSalary} 
+                                    onChange={e => setApplyForm({...applyForm, expectedSalary: e.target.value})} 
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-3 mt-6">
+                            <motion.button 
+                                whileHover={{ scale: 1.02 }} 
+                                whileTap={{ scale: 0.98 }} 
+                                type="button" 
+                                className="flex-1 py-3 rounded-xl bg-neutral-800 text-white font-semibold hover:bg-neutral-700 transition-all border border-neutral-700" 
+                                onClick={() => setSelectedTuition(null)}
+                                disabled={applyLoading}
+                            >
+                                Cancel
+                            </motion.button>
+                            <motion.button 
+                                whileHover={{ scale: 1.02 }} 
+                                whileTap={{ scale: 0.98 }} 
+                                type="submit"
+                                disabled={applyLoading}
+                                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white font-semibold hover:from-violet-500 hover:to-fuchsia-500 transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-70 disabled:cursor-not-allowed"
+                            >
+                                {applyLoading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                                {applyLoading ? "Submitting..." : "Submit"}
+                            </motion.button>
+                        </div>
+                    </form>
                 </motion.div>
             </div>
           )}

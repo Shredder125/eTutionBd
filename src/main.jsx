@@ -1,3 +1,5 @@
+// main.jsx
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
@@ -9,11 +11,11 @@ import GlobalEffects from './components/GlobalEffects';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthContextProvider>
-      <GlobalEffects>
-        <div className="max-w-screen mx-auto">
-            <RouterProvider router={router} />
-        </div>
-      </GlobalEffects>
+      <RouterProvider router={router}>
+        <GlobalEffects>
+          {/* Your app renders here */}
+        </GlobalEffects>
+      </RouterProvider>
     </AuthContextProvider>
   </React.StrictMode>,
 )

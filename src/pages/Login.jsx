@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom"; 
-import { motion, AnimatePresence, useMotionTemplate, useMotionValue, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import { useUserAuth } from "../context/AuthContext";
 import { 
-  Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, Star, Quote, AlertCircle, CheckCircle2, Zap 
+  Mail, Lock, Eye, EyeOff, Loader2, ArrowLeft, Star, AlertCircle 
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -61,7 +61,7 @@ const TESTIMONIALS = [
   },
   {
     id: 2,
-    text: "I hired a BUET tutor for my son within 24 hours. The verification badge really builds trust.",
+    text: "I hired an IIT tutor for my son within 24 hours. The verification badge really builds trust.",
     name: "Mrs. Farhana",
     role: "Guardian",
     img: "https://i.pravatar.cc/150?u=a042581f4e29026024d"
@@ -77,7 +77,7 @@ const TESTIMONIALS = [
 
 const Login = () => {
   /* -------------------------------------------------------------------------- */
-  /* 3. LOGIC (UNCHANGED)                                                       */
+  /* 3. LOGIC (UPDATED WITH FIX)                                              */
   /* -------------------------------------------------------------------------- */
   const navigate = useNavigate();
   const location = useLocation(); 
@@ -91,6 +91,11 @@ const Login = () => {
 
   const from = location.state?.from || "/dashboard";
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTestimonial((prev) => (prev + 1) % TESTIMONIALS.length);
@@ -98,11 +103,35 @@ const Login = () => {
     return () => clearInterval(timer);
   }, []);
 
+  // ✅ CRITICAL FIX: Save Google User to MongoDB
   const handleGoogleLogin = async () => {
     try {
       setError("");
-      await googleSignIn();
+      
+      // 1. Firebase Login
+      const result = await googleSignIn();
+      const user = result.user;
+
+      // 2. Prepare Data for MongoDB
+      // Note: We default to 'student'. If they are already in DB as 'tutor', 
+      // the backend check (existingUser) will ignore this and keep them as 'tutor'.
+      const userInfo = {
+          name: user.displayName,
+          email: user.email,
+          role: "student", 
+          photoURL: user.photoURL || "https://placehold.co/100"
+      };
+
+      // 3. Send to Backend
+      await fetch(`${import.meta.env.VITE_API_URL}/users`, { 
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(userInfo)
+      });
+
+      // 4. Navigate
       navigate(from, { replace: true });
+
     } catch (err) {
       console.error(err);
       setError("Failed to sign in with Google.");
@@ -128,7 +157,7 @@ const Login = () => {
   };
 
   /* -------------------------------------------------------------------------- */
-  /* 4. RENDER (ADVANCED UI)                                                    */
+  /* 4. RENDER (ADVANCED UI)                                                  */
   /* -------------------------------------------------------------------------- */
   return (
     <div className="min-h-screen bg-black text-white font-sans flex items-center justify-center relative overflow-hidden p-4 sm:p-8">
@@ -150,15 +179,12 @@ const Login = () => {
                 {/* Abstract Shapes */}
                 <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-violet-600/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
                 
-                <div className="relative z-10">
-                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-500/20 mb-6">
-                        <span className="text-xl font-bold text-white">e</span>
-                    </div>
+                <div className="relative z-10 pt-8">
                     <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
                         Education <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">Reimagined.</span>
                     </h1>
-                    <p className="text-neutral-400 text-lg max-w-xs">Join 12,000+ students and tutors on the #1 platform in Bangladesh.</p>
+                    <p className="text-neutral-400 text-lg max-w-xs">Join 12,000+ students and tutors on the #1 platform in India.</p>
                 </div>
 
                 {/* Floating Testimonial Card */}
@@ -279,7 +305,7 @@ const Login = () => {
                     </form>
 
                     <p className="text-center text-sm text-neutral-500 mt-8">
-                        New to eTuitionBd? <Link to="/register" className="text-white font-medium hover:text-violet-400 transition-colors underline decoration-neutral-700 underline-offset-4">Create an account</Link>
+                        New to eTuitionIndia? <Link to="/register" className="text-white font-medium hover:text-violet-400 transition-colors underline decoration-neutral-700 underline-offset-4">Create an account</Link>
                     </p>
                 </div>
             </div>

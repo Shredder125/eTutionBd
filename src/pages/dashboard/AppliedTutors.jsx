@@ -15,18 +15,25 @@ const AppliedTutors = () => {
     const fetchApplications = async () => {
       try {
         if (!user?.email) return;
+
         const token = localStorage.getItem("access-token");
-        
-        // FIX: Use Environment Variable
+        if (!token) return;
+
         const res = await fetch(`${import.meta.env.VITE_API_URL}/applications/received/${user.email}`, {
           headers: { authorization: `Bearer ${token}` },
         });
+
+        if (!res.ok) {
+          setApplications([]);
+          return;
+        }
+
         const data = await res.json();
         
         if (Array.isArray(data)) {
-            setApplications(data);
+          setApplications(data);
         } else {
-            setApplications([]);
+          setApplications([]);
         }
       } catch (error) {
         console.error("Error fetching applications:", error);
@@ -34,6 +41,7 @@ const AppliedTutors = () => {
         setLoading(false);
       }
     };
+    
     fetchApplications();
   }, [user]);
 
@@ -79,7 +87,6 @@ const AppliedTutors = () => {
         confirmButtonColor: "#10b981"
     }).then((result) => {
         if (result.isConfirmed) {
-            // Redirect to Payment Page and pass the Application Data
             navigate("/dashboard/payment", { state: { application: app } });
         }
     });
