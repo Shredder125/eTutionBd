@@ -4,7 +4,7 @@ A robust, role-based web application built using the MERN stack (MongoDB, Expres
 
 ## 🔗 Live Demo & Credentials
 
-| Role | Email | Password | Live Site Link | GitHub Repository |
+ Live Site Link : 
 | :--- | :--- | :--- | :--- | :--- |
 
 
