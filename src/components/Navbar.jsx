@@ -18,7 +18,6 @@ const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Smooth scroll with RAF
     useEffect(() => {
         let ticking = false;
         let rafId = null;
@@ -61,32 +60,30 @@ const Navbar = () => {
                     to={link.path}
                     onClick={closeMenu}
                     className={({ isActive }) =>
-                        `px-3 py-2 rounded-lg font-medium transition-all duration-300 relative group hover:bg-primary/10 ${
+                        `px-4 py-2 rounded-lg font-bold transition-all duration-300 text-sm uppercase tracking-wide ${
                             isActive
-                                ? "text-primary bg-primary/20 shadow-md"
-                                : "text-neutral-300 hover:text-primary"
+                                ? "text-cyan-300 bg-cyan-500/20 border border-cyan-500/50 shadow-lg shadow-cyan-500/30"
+                                : "text-gray-300 hover:text-cyan-300 border border-transparent hover:border-cyan-500/30"
                         }`
                     }
                 >
                     {link.name}
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-4/5"></span>
                 </NavLink>
             </li>
         ));
 
     return (
-        <nav className="fixed top-0 w-full z-50 backdrop-blur-2xl border-b border-neutral-800/50 shadow-2xl">
-            {/* Always solid background with glass effect */}
-            <div className={`transition-all duration-500 ease-out py-4 ${
+        <nav className="fixed top-0 w-full z-50 backdrop-blur-lg border-b border-cyan-500/30">
+            <div className={`transition-all duration-300 ${
                 scrolled 
-                    ? "bg-neutral-950/95 shadow-xl" 
-                    : "bg-neutral-950/90"
+                    ? "bg-black/95 py-3 shadow-2xl shadow-cyan-500/20" 
+                    : "bg-gradient-to-b from-black/90 to-black/70 py-4"
             }`}>
                 <div className="container mx-auto px-6 flex items-center justify-between">
                     {/* LEFT: LOGO & MOBILE MENU */}
                     <div className="flex items-center gap-4">
                         <button
-                            className="lg:hidden p-2 rounded-xl bg-neutral-900/50 hover:bg-neutral-800/50 transition-all duration-300"
+                            className="lg:hidden p-2 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 transition-all duration-300"
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             aria-label="Toggle menu"
                         >
@@ -95,9 +92,9 @@ const Navbar = () => {
 
                         <Link
                             to="/"
-                            className="text-2xl font-black tracking-tight flex items-center gap-1 bg-gradient-to-r from-primary via-purple-500 to-secondary bg-clip-text text-transparent hover:scale-105 transition-all duration-300"
+                            className="text-2xl font-black text-white hover:text-cyan-400 transition-colors tracking-wider"
                         >
-                            eTuition<span className="text-white font-normal">Bd</span>
+                            eTuitionBd
                         </Link>
                     </div>
 
@@ -111,7 +108,7 @@ const Navbar = () => {
                         <div className="flex items-center gap-3">
                             <Link
                                 to="/dashboard"
-                                className="hidden md:flex items-center gap-2 px-4 py-2 bg-neutral-900/50 hover:bg-primary/10 border border-neutral-800/50 text-primary font-medium rounded-xl transition-all duration-300 hover:scale-105"
+                                className="hidden md:flex items-center gap-2 px-5 py-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-bold rounded-lg border border-cyan-500/50 transition-all duration-300 uppercase text-sm tracking-wide shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40"
                             >
                                 <LayoutDashboard size={18} />
                                 Dashboard
@@ -121,35 +118,35 @@ const Navbar = () => {
                             <div className="dropdown dropdown-end">
                                 <button
                                     tabIndex={0}
-                                    className="p-2 rounded-xl bg-neutral-900/50 hover:bg-neutral-800/50 ring-2 ring-neutral-700/50 hover:ring-primary/30 transition-all duration-300 hover:scale-105"
+                                    className="p-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/50 transition-all duration-300 shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40"
                                 >
-                                    <div className="w-10 h-10 rounded-2xl overflow-hidden ring-2 ring-white/20">
+                                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-cyan-500/50">
                                         <img
                                             alt="User Avatar"
-                                            src={user.photoURL || "https://placehold.co/100/purple/white?text=U"}
+                                            src={user.photoURL || "https://placehold.co/100/0f172a/06b6d4?text=U"}
                                             className="w-full h-full object-cover"
                                         />
                                     </div>
                                 </button>
-                                <ul className="dropdown-content mt-2 p-3 shadow-2xl bg-neutral-950/95 backdrop-blur-xl border border-neutral-800/50 rounded-2xl w-56 space-y-1">
-                                    <li className="menu-title px-3 py-2 text-sm bg-neutral-900/50 rounded-xl">
+                                <ul className="dropdown-content mt-3 p-3 bg-black/95 backdrop-blur-lg border border-cyan-500/30 rounded-lg w-56 space-y-2 shadow-2xl shadow-cyan-500/20">
+                                    <li className="px-4 py-2 text-sm font-bold text-cyan-400 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
                                         {user.displayName || "My Account"}
                                     </li>
                                     <li>
-                                        <Link to="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-900/50 transition-colors">
+                                        <Link to="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-3 p-2 rounded-lg hover:bg-cyan-500/20 text-gray-300 hover:text-cyan-300 transition-colors font-semibold border border-transparent hover:border-cyan-500/30">
                                             <User size={18} /> Profile
                                         </Link>
                                     </li>
                                     <li>
-                                        <Link to="/dashboard" onClick={closeMenu} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-900/50 transition-colors">
+                                        <Link to="/dashboard" onClick={closeMenu} className="flex items-center gap-3 p-2 rounded-lg hover:bg-cyan-500/20 text-gray-300 hover:text-cyan-300 transition-colors font-semibold border border-transparent hover:border-cyan-500/30">
                                             <LayoutDashboard size={18} /> Dashboard
                                         </Link>
                                     </li>
-                                    <div className="divider my-1 bg-neutral-800"></div>
+                                    <div className="divider my-2 bg-cyan-500/20"></div>
                                     <li>
                                         <button
                                             onClick={handleLogout}
-                                            className="w-full flex items-center gap-3 p-3 text-error hover:bg-error/10 rounded-xl transition-all duration-200"
+                                            className="w-full flex items-center gap-3 p-2 text-red-400/80 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors font-semibold border border-transparent hover:border-red-500/30"
                                         >
                                             <LogOut size={18} /> Logout
                                         </button>
@@ -161,13 +158,13 @@ const Navbar = () => {
                         <div className="flex items-center gap-3">
                             <Link 
                                 to="/login" 
-                                className="px-6 py-2.5 bg-neutral-900/50 hover:bg-neutral-800/50 border border-neutral-800/50 text-neutral-200 font-medium rounded-xl transition-all duration-300 hover:scale-105"
+                                className="px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white font-bold rounded-lg border border-gray-700/50 transition-all duration-300 uppercase text-sm tracking-wide"
                             >
                                 Log In
                             </Link>
                             <Link
                                 to="/register"
-                                className="px-8 py-2.5 bg-gradient-to-r from-primary to-purple-600 text-white font-semibold rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 active:scale-95 transition-all duration-300 hover:scale-105"
+                                className="px-6 py-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-bold rounded-lg border border-cyan-500/50 transition-all duration-300 uppercase text-sm tracking-wide shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40"
                             >
                                 Register
                             </Link>
@@ -178,32 +175,32 @@ const Navbar = () => {
 
             {/* MOBILE MENU */}
             {isMobileMenuOpen && (
-                <div className="lg:hidden mt-1 p-4 bg-neutral-950/95 backdrop-blur-xl border-t border-neutral-800/50 shadow-2xl rounded-b-2xl animate-in slide-in-from-top-2 duration-200">
-                    <ul className="space-y-2">
-                        {renderNavLinks()}
-                        {user ? (
-                            <>
-                                <li className="mt-4 pt-4 border-t border-neutral-800/50 space-y-2">
-                                    <Link to="/dashboard" onClick={closeMenu} className="flex items-center gap-3 p-3 bg-neutral-900/50 rounded-xl hover:bg-primary/10 text-primary font-medium transition-all">
-                                        <LayoutDashboard size={18} /> Dashboard
-                                    </Link>
-                                    <Link to="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-3 p-3 rounded-xl hover:bg-neutral-900/50 transition-all">
-                                        <User size={18} /> Profile
-                                    </Link>
-                                    <button onClick={handleLogout} className="w-full flex items-center gap-3 p-3 text-error hover:bg-error/10 rounded-xl transition-all">
-                                        <LogOut size={18} /> Logout
-                                    </button>
+                <div className="lg:hidden border-t border-cyan-500/30 bg-black/95 backdrop-blur-lg">
+                    <div className="container mx-auto px-6 py-4">
+                        <ul className="space-y-2">
+                            {renderNavLinks()}
+                            {user ? (
+                                <>
+                                    <li className="mt-4 pt-4 border-t border-cyan-500/30 space-y-2">
+                                        <Link to="/dashboard" onClick={closeMenu} className="flex items-center gap-3 p-3 bg-cyan-500/20 text-cyan-300 rounded-lg font-bold border border-cyan-500/50 transition-all uppercase text-sm tracking-wide">
+                                            <LayoutDashboard size={18} /> Dashboard
+                                        </Link>
+                                        <Link to="/dashboard/profile" onClick={closeMenu} className="flex items-center gap-3 p-3 rounded-lg hover:bg-cyan-500/20 text-gray-300 hover:text-cyan-300 transition-colors font-semibold border border-transparent hover:border-cyan-500/30">
+                                            <User size={18} /> Profile
+                                        </Link>
+                                        <button onClick={handleLogout} className="w-full flex items-center gap-3 p-3 text-red-400/80 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all font-semibold border border-transparent hover:border-red-500/30">
+                                            <LogOut size={18} /> Logout
+                                        </button>
+                                    </li>
+                                </>
+                            ) : (
+                                <li className="mt-4 pt-4 border-t border-cyan-500/30 space-y-2">
+                                    <Link to="/login" onClick={closeMenu} className="block p-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-center font-bold transition-all uppercase text-sm tracking-wide border border-gray-700/50">Log In</Link>
+                                    <Link to="/register" onClick={closeMenu} className="block p-3 bg-cyan-500/20 text-cyan-300 rounded-lg text-center font-bold transition-all uppercase text-sm tracking-wide border border-cyan-500/50 shadow-lg shadow-cyan-500/20">Register</Link>
                                 </li>
-                            </>
-                        ) : (
-                            <li className="mt-4 pt-4 border-t border-neutral-800/50 space-y-2">
-                                <Link to="/login" onClick={closeMenu} className="block p-3 bg-neutral-900/50 hover:bg-neutral-800/50 rounded-xl transition-all">Log In</Link>
-                                <Link to="/register" onClick={closeMenu} className="block w-full p-3 bg-gradient-to-r from-primary to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-primary/50 transition-all">
-                                    Register
-                                </Link>
-                            </li>
-                        )}
-                    </ul>
+                            )}
+                        </ul>
+                    </div>
                 </div>
             )}
         </nav>
