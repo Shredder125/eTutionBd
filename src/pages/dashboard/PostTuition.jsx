@@ -33,7 +33,6 @@ const PostTuition = () => {
     };
 
     try {
-      // ✅ FIX: Get the Custom Token from Local Storage
       const token = localStorage.getItem('access-token');
 
       if (!token) {
@@ -42,12 +41,11 @@ const PostTuition = () => {
         return;
       }
 
-      // 2. Send Data to Your Backend
       const response = await fetch("http://localhost:5000/tuitions", {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          authorization: `Bearer ${token}`, // Sending the correct token
+          authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(newTuition),
       });
@@ -59,7 +57,6 @@ const PostTuition = () => {
         form.reset();
         setTimeout(() => navigate("/dashboard/my-tuitions"), 2000);
       } else {
-        // Handle backend errors (like forbidden access)
         alert(data.message || "Failed to post tuition");
       }
     } catch (error) {
@@ -125,12 +122,12 @@ const PostTuition = () => {
               <label className="label"><span className="label-text font-medium">Location</span></label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                <input type="text" name="location" placeholder="e.g. Dhanmondi, Dhaka" className="input input-bordered w-full pl-10 focus:input-primary" required />
+                <input type="text" name="location" placeholder="e.g. Mumbai, Delhi" className="input input-bordered w-full pl-10 focus:input-primary" required />
               </div>
             </div>
 
             <div className="form-control w-full">
-              <label className="label"><span className="label-text font-medium">Monthly Budget (BDT)</span></label>
+              <label className="label"><span className="label-text font-medium">Monthly Budget (INR)</span></label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                 <input type="number" name="budget" placeholder="e.g. 5000" className="input input-bordered w-full pl-10 focus:input-primary" required />

@@ -27,7 +27,7 @@ import ManageUsers from "../pages/dashboard/admin/ManageUsers";
 import AdminStats from "../pages/dashboard/admin/AdminStats";
 
 import MyApplications from "../pages/dashboard/tutor/MyApplications";
-import UpdateApplication from "../pages/dashboard/tutor/UpdateApplication"; // <-- NEW
+import UpdateApplication from "../pages/dashboard/tutor/UpdateApplication";
 import TutorRevenue from "../pages/dashboard/tutor/TutorRevenue";
 import OngoingTuitions from "../pages/dashboard/tutor/OngoingTuitions"; 
 
@@ -67,7 +67,7 @@ export const router = createBrowserRouter([
       { path: "my-tuitions", element: <MyTuitions /> },
       { path: "applied-tutors", element: <AppliedTutors /> },
       { path: "update-tuition/:id", element: <UpdateTuition /> },
-      { path: "update-application/:id", element: <UpdateApplication /> }, // <-- NEW
+      { path: "update-application/:id", element: <UpdateApplication /> },
       { path: "payments", element: <PaymentHistory /> },
       { path: "payment", element: <Payment /> },
       { path: "manage-tuitions", element: <ManageTuitions /> },

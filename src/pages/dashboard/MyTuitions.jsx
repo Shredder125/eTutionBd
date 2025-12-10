@@ -8,57 +8,39 @@ const MyTuitions = () => {
   const [tuitions, setTuitions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch data from backend
   const fetchMyTuitions = async () => {
     try {
       if (!user?.email) return;
-
-      // 1. UPDATED: Get token from localStorage (matches your AuthContext logic)
       const token = localStorage.getItem('access-token');
-      
       const response = await fetch(`http://localhost:5000/my-tuitions/${user.email}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
+        headers: { authorization: `Bearer ${token}` },
       });
       const data = await response.json();
-
-      // 2. UPDATED: Safety Check to prevent "map is not a function" crash
       if (Array.isArray(data)) {
         setTuitions(data);
       } else {
-        console.error("Backend Error (Not an array):", data);
-        setTuitions([]); // Fallback to empty list
+        setTuitions([]);
       }
     } catch (error) {
-      console.error("Error fetching tuitions:", error);
       setTuitions([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Delete a post
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
-
     try {
-      // 3. UPDATED: Use localStorage token here too
       const token = localStorage.getItem('access-token');
-
       const res = await fetch(`http://localhost:5000/tuitions/${id}`, {
         method: "DELETE",
         headers: { authorization: `Bearer ${token}` },
       });
       const result = await res.json();
-      
       if (result.deletedCount > 0) {
-        // Remove from UI immediately
         setTuitions(tuitions.filter((t) => t._id !== id));
       }
-    } catch (error) {
-      console.error("Error deleting:", error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -91,7 +73,6 @@ const MyTuitions = () => {
       ) : (
         <div className="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">
           <table className="table w-full">
-            {/* Table Header */}
             <thead className="bg-gray-50 text-gray-600 text-sm uppercase">
               <tr>
                 <th className="py-4 pl-6">Subject Info</th>
@@ -101,7 +82,6 @@ const MyTuitions = () => {
                 <th>Actions</th>
               </tr>
             </thead>
-            {/* Table Body */}
             <tbody>
               {tuitions.map((item) => (
                 <tr key={item._id} className="hover:bg-gray-50/50 transition-colors border-b border-gray-100 last:border-0">
@@ -113,12 +93,12 @@ const MyTuitions = () => {
                   </td>
                   <td>
                     <div className="flex items-center gap-1.5 text-gray-600 font-medium">
-                      <MapPin size={16} className="text-gray-400" /> {item.location}
+                      <MapPin size={16} className="text-gray-400" /> {item.location || "Mumbai, India"}
                     </div>
                   </td>
                   <td>
                     <div className="font-bold text-primary text-lg">
-                       ৳ {item.budget}
+                       ₹ {item.budget}
                     </div>
                     <span className="text-xs text-gray-400">/month</span>
                   </td>

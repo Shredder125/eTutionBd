@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, MapPin, DollarSign, BookOpen, AlertCircle, X, Loader2, Layers, FileText, Calendar } from "lucide-react";
+import { Plus, Edit, Trash2, MapPin, DollarSign, BookOpen, AlertCircle, X, Loader2, Layers } from "lucide-react";
 import Swal from "sweetalert2";
 import { useUserAuth } from "../../context/AuthContext";
 
@@ -7,38 +7,28 @@ const MyTuitions = () => {
   const { user } = useUserAuth();
   const [tuitions, setTuitions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Form State
   const [editItem, setEditItem] = useState(null);
   const [formData, setFormData] = useState({
     subject: "",
-    classGrade: "", // Matches MongoDB Schema
+    classGrade: "",
     location: "",
     budget: "",
     description: ""
   });
 
-  // 1. FETCH MY TUITIONS
   const fetchMyTuitions = async () => {
     try {
       if (!user?.email) return;
       setIsLoading(true);
-      
       const token = localStorage.getItem("access-token");
       const res = await fetch(`http://localhost:5000/my-tuitions/${user.email}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      
-      if (Array.isArray(data)) {
-        setTuitions(data);
-      } else {
-        setTuitions([]);
-      }
+      if (Array.isArray(data)) setTuitions(data);
+      else setTuitions([]);
     } catch (error) {
       console.error("Error fetching tuitions:", error);
     } finally {
@@ -50,16 +40,13 @@ const MyTuitions = () => {
     fetchMyTuitions();
   }, [user]);
 
-  // 2. HANDLE INPUT
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // 3. OPEN MODAL
   const openModal = (tuition = null) => {
     if (tuition) {
-      // EDIT MODE
       setEditItem(tuition);
       setFormData({
         subject: tuition.subject,
@@ -69,23 +56,19 @@ const MyTuitions = () => {
         description: tuition.description || ""
       });
     } else {
-      // ADD MODE
       setEditItem(null);
       setFormData({ subject: "", classGrade: "", location: "", budget: "", description: "" });
     }
     setIsModalOpen(true);
   };
 
-  // 4. SUBMIT FORM
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     const token = localStorage.getItem("access-token");
-
-    // Prepare Payload
     const payload = { 
         ...formData, 
-        budget: parseInt(formData.budget), // Ensure number
+        budget: parseInt(formData.budget),
         studentName: user.displayName,
         studentEmail: user.email,
         studentPhoto: user.photoURL
@@ -93,7 +76,6 @@ const MyTuitions = () => {
 
     try {
       if (editItem) {
-        // --- UPDATE ---
         const res = await fetch(`http://localhost:5000/tuitions/update/${editItem._id}`, {
           method: "PATCH",
           headers: { 
@@ -103,18 +85,11 @@ const MyTuitions = () => {
           body: JSON.stringify(payload)
         });
         if (res.ok) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Updated!',
-            text: 'Your tuition post has been updated.',
-            timer: 1500,
-            showConfirmButton: false
-          });
+          Swal.fire({ icon: 'success', title: 'Updated!', text: 'Your tuition post has been updated.', timer: 1500, showConfirmButton: false });
           fetchMyTuitions();
           setIsModalOpen(false);
         }
       } else {
-        // --- CREATE ---
         const res = await fetch("http://localhost:5000/tuitions", {
           method: "POST",
           headers: { 
@@ -124,13 +99,7 @@ const MyTuitions = () => {
           body: JSON.stringify(payload)
         });
         if (res.ok) {
-          Swal.fire({
-            icon: 'success',
-            title: 'Posted!',
-            text: 'Your tuition request is live.',
-            timer: 1500,
-            showConfirmButton: false
-          });
+          Swal.fire({ icon: 'success', title: 'Posted!', text: 'Your tuition request is live.', timer: 1500, showConfirmButton: false });
           fetchMyTuitions();
           setIsModalOpen(false);
         }
@@ -142,7 +111,6 @@ const MyTuitions = () => {
     }
   };
 
-  // 5. DELETE TUITION
   const handleDelete = (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -174,35 +142,27 @@ const MyTuitions = () => {
   return (
     <div className="min-h-screen bg-base-200 p-6 font-sans">
       <div className="max-w-7xl mx-auto">
-        
-        {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">My Tuition Posts</h1>
             <p className="text-gray-500 mt-1">Manage and track your active tuition requests.</p>
           </div>
-          <button 
-            onClick={() => openModal()}
-            className="btn btn-primary text-white shadow-lg gap-2"
-          >
+          <button onClick={() => openModal()} className="btn btn-primary text-white shadow-lg gap-2">
             <Plus size={20} /> Post New Tuition
           </button>
         </div>
 
-        {/* LOADING STATE */}
         {isLoading && (
           <div className="flex justify-center py-20">
             <span className="loading loading-spinner loading-lg text-primary"></span>
           </div>
         )}
 
-        {/* LIST OF TUITIONS */}
         {!isLoading && (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {tuitions.map((item) => (
               <div key={item._id} className="card bg-white shadow-sm border border-base-300 hover:shadow-md transition-all group">
                 <div className="card-body p-6">
-                  {/* Status Badge */}
                   <div className="flex justify-between items-start mb-2">
                     <span className={`badge font-bold py-3 
                       ${item.status === 'approved' ? 'badge-success text-white' 
@@ -227,22 +187,15 @@ const MyTuitions = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <DollarSign size={18} className="text-primary" /> 
-                      <span className="font-bold text-gray-800">{item.budget} BDT</span> / month
+                      <span className="font-bold text-gray-800">{item.budget} INR</span> / month
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="card-actions justify-end mt-auto pt-4 border-t border-base-200">
-                    <button 
-                      onClick={() => openModal(item)}
-                      className="btn btn-sm btn-ghost text-blue-600 hover:bg-blue-50 gap-2"
-                    >
+                    <button onClick={() => openModal(item)} className="btn btn-sm btn-ghost text-blue-600 hover:bg-blue-50 gap-2">
                       <Edit size={16} /> Edit
                     </button>
-                    <button 
-                      onClick={() => handleDelete(item._id)}
-                      className="btn btn-sm btn-ghost text-red-500 hover:bg-red-50 gap-2"
-                    >
+                    <button onClick={() => handleDelete(item._id)} className="btn btn-sm btn-ghost text-red-500 hover:bg-red-50 gap-2">
                       <Trash2 size={16} /> Delete
                     </button>
                   </div>
@@ -252,7 +205,6 @@ const MyTuitions = () => {
           </div>
         )}
 
-        {/* EMPTY STATE */}
         {!isLoading && tuitions.length === 0 && (
            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-300">
              <div className="bg-base-200 p-5 rounded-full mb-4">
@@ -264,12 +216,9 @@ const MyTuitions = () => {
            </div>
         )}
 
-        {/* --- MODAL (CREATE / EDIT) --- */}
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]">
-              
-              {/* Modal Header */}
               <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                   <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                     {editItem ? <Edit size={20} className="text-primary"/> : <Plus size={20} className="text-primary"/>}
@@ -280,7 +229,6 @@ const MyTuitions = () => {
                   </button>
               </div>
 
-              {/* Modal Form - Scrollable Area */}
               <div className="p-6 overflow-y-auto">
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
@@ -299,8 +247,8 @@ const MyTuitions = () => {
                                     <option value="" disabled>Select Class</option>
                                     <option value="Class 1-5">Class 1-5</option>
                                     <option value="Class 6-8">Class 6-8</option>
-                                    <option value="SSC / O-Level">SSC / O-Level</option>
-                                    <option value="HSC / A-Level">HSC / A-Level</option>
+                                    <option value="CBSE / ICSE">CBSE / ICSE</option>
+                                    <option value="State Board">State Board</option>
                                     <option value="University">University</option>
                                 </select>
                             </div>
@@ -311,12 +259,12 @@ const MyTuitions = () => {
                         <label className="label text-xs font-semibold text-gray-500 uppercase">Location</label>
                         <div className="relative">
                             <MapPin size={16} className="absolute left-3 top-3.5 text-gray-400"/>
-                            <input name="location" value={formData.location} onChange={handleInputChange} required className="input input-bordered w-full pl-10 focus:input-primary" placeholder="e.g. Dhanmondi, Dhaka" />
+                            <input name="location" value={formData.location} onChange={handleInputChange} required className="input input-bordered w-full pl-10 focus:input-primary" placeholder="e.g. Mumbai, Delhi" />
                         </div>
                     </div>
 
                     <div className="form-control">
-                        <label className="label text-xs font-semibold text-gray-500 uppercase">Monthly Budget (BDT)</label>
+                        <label className="label text-xs font-semibold text-gray-500 uppercase">Monthly Budget (INR)</label>
                         <div className="relative">
                             <DollarSign size={16} className="absolute left-3 top-3.5 text-gray-400"/>
                             <input type="number" name="budget" value={formData.budget} onChange={handleInputChange} required className="input input-bordered w-full pl-10 focus:input-primary" placeholder="e.g. 5000" />
@@ -329,11 +277,7 @@ const MyTuitions = () => {
                     </div>
 
                     <div className="pt-4">
-                        <button 
-                            type="submit" 
-                            disabled={isSubmitting}
-                            className="btn btn-primary w-full text-white font-bold"
-                        >
+                        <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full text-white font-bold">
                             {isSubmitting ? <span className="loading loading-spinner"></span> : editItem ? "Save Changes" : "Submit Post"}
                         </button>
                     </div>

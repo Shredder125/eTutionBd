@@ -4,12 +4,11 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm from "./CheckoutForm";
 
-// Replace with your actual PUBLISHABLE KEY from Stripe Dashboard
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PK); 
 
 const Payment = () => {
   const location = useLocation();
-  const { application } = location.state || {}; // Get passed data
+  const { application } = location.state || {};
 
   if (!application) return <div>Error: No application data found.</div>;
 
@@ -18,7 +17,7 @@ const Payment = () => {
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold text-gray-800">Complete Payment</h1>
         <p className="text-gray-500 mt-2">
-            Hiring <strong>{application.tutorName}</strong> for <strong>{application.tuitionData?.subject}</strong>
+            Hiring <strong>{application.tutorName}</strong> for <strong>{application.tuitionData?.subject}</strong> in India
         </p>
       </div>
       

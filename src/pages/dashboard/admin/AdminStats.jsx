@@ -33,7 +33,7 @@ const AdminStats = () => {
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <Activity className="text-primary" /> Reports & Analytics
         </h1>
-        <p className="text-gray-500 text-sm mt-1">Overview of platform performance and revenue.</p>
+        <p className="text-gray-500 text-sm mt-1">Overview of platform performance and revenue in India.</p>
       </div>
 
       {/* Stats Grid */}
@@ -44,7 +44,7 @@ const AdminStats = () => {
             <div className="relative z-10">
                 <p className="text-white/80 text-sm font-medium mb-1">Total Revenue</p>
                 <h3 className="text-4xl font-bold">
-                    ৳ <CountUp end={stats.revenue} duration={2} separator="," />
+                    ₹ <CountUp end={stats.revenue} duration={2} separator="," />
                 </h3>
             </div>
             <div className="absolute right-4 top-4 p-3 bg-white/20 rounded-full backdrop-blur-sm">

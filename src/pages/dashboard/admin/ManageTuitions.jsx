@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CheckCircle, XCircle, Shield, AlertCircle, MapPin, DollarSign, Calendar } from "lucide-react";
+import { CheckCircle, XCircle, Shield, AlertCircle, MapPin, Calendar } from "lucide-react";
 import Swal from "sweetalert2";
 
 const ManageTuitions = () => {
@@ -10,7 +10,6 @@ const ManageTuitions = () => {
   const fetchAllTuitions = async () => {
     try {
       const token = localStorage.getItem("access-token");
-      // ✅ FIX: Use Environment Variable
       const res = await fetch(`${import.meta.env.VITE_API_URL}/tuitions/admin/all`, {
         headers: { authorization: `Bearer ${token}` }
       });
@@ -71,7 +70,7 @@ const ManageTuitions = () => {
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <Shield className="text-primary" /> Manage Tuitions
         </h1>
-        <p className="text-gray-500 text-sm mt-1">Admin Control Panel: Approve or reject student posts.</p>
+        <p className="text-gray-500 text-sm mt-1">Admin Control Panel: Approve or reject student posts in India.</p>
       </div>
 
       {tuitions.length === 0 ? (
@@ -100,13 +99,13 @@ const ManageTuitions = () => {
                         Posted by: <span className="font-medium text-gray-700">{item.studentName || item.studentEmail}</span>
                       </div>
                       <div className="text-xs text-gray-400">
-                        {new Date(item.createdAt).toLocaleDateString()}
+                        {new Date(item.createdAt).toLocaleDateString('en-IN')}
                       </div>
                     </td>
                     <td>
                         <div className="space-y-1">
                             <div className="flex items-center gap-1.5 text-xs text-gray-600">
-                                <MapPin size={12} className="text-primary"/> {item.location}
+                                <MapPin size={12} className="text-primary"/> {item.location || "Mumbai, India"}
                             </div>
                             <div className="flex items-center gap-1.5 text-xs text-gray-600">
                                 <Calendar size={12} className="text-primary"/> {item.daysPerWeek} Days/Week
@@ -115,7 +114,7 @@ const ManageTuitions = () => {
                     </td>
                     <td>
                         <div className="flex items-center gap-1 font-bold text-gray-800">
-                            <DollarSign size={14} className="text-green-600" /> {item.budget}
+                            ₹ {item.budget}
                         </div>
                     </td>
                     <td>

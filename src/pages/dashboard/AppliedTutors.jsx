@@ -71,7 +71,7 @@ const AppliedTutors = () => {
   const handleApprove = (app) => {
     Swal.fire({
       title: "Hire this Tutor?",
-      text: `To hire ${app.tutorName}, you need to pay the first month's salary of ৳${app.expectedSalary}.`,
+      text: `To hire ${app.tutorName}, you need to pay the first month's salary of ₹${app.expectedSalary}.`,
       icon: "info",
       showCancelButton: true,
       confirmButtonText: "Proceed to Payment",
@@ -140,7 +140,7 @@ const AppliedTutors = () => {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-700">
                         <DollarSign size={16} className="text-green-600" /> 
-                        <span>Expected Salary: <span className="font-bold text-green-700">৳ {app.expectedSalary}</span></span>
+                        <span>Expected Salary: <span className="font-bold text-green-700">₹ {app.expectedSalary}</span></span>
                     </div>
                 </div>
               </div>

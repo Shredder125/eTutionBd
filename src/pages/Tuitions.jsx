@@ -8,7 +8,6 @@ import Swal from "sweetalert2";
 const CLASS_OPTIONS = ["Class 1-5", "Class 6-8", "Class 9-10", "HSC / A-Level", "University"];
 const INDIAN_CITIES = ["Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata", "Hyderabad", "Pune", "Jaipur", "Ahmedabad", "Lucknow"];
 
-/* STYLES */
 const styles = `
   @keyframes shimmer {
     0% { background-position: -100% 0; }
@@ -21,7 +20,6 @@ const styles = `
   }
 `;
 
-/* ANIMATION VARIANTS */
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
@@ -62,10 +60,7 @@ const Tuitions = () => {
         const res = await fetch(`${import.meta.env.VITE_API_URL}/tuitions`);
         const data = await res.json();
 
-        // Ensure we only get Approved posts
         const approved = Array.isArray(data) ? data.filter(t => t.status === 'approved') : [];
-        
-        // Replace locations with random Indian cities
         const withIndianLocations = approved.map(t => ({ ...t, location: INDIAN_CITIES[Math.floor(Math.random() * INDIAN_CITIES.length)] }));
 
         setTuitions(withIndianLocations);
@@ -90,7 +85,6 @@ const Tuitions = () => {
 
   useEffect(() => {
     let result = tuitions;
-
     if (searchTerm) {
         const lowerTerm = searchTerm.toLowerCase();
         result = result.filter(item => 
@@ -98,11 +92,9 @@ const Tuitions = () => {
             (item.location && item.location.toLowerCase().includes(lowerTerm))
         );
     }
-
     if (selectedClass) {
         result = result.filter(item => item.classGrade === selectedClass);
     }
-
     setFilteredTuitions(result);
     setCurrentPage(0);
   }, [searchTerm, selectedClass, tuitions]);
@@ -273,7 +265,6 @@ const Tuitions = () => {
             </>
           )}
 
-          {/* Apply Modal */}
           {selectedTuition && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-neutral-900 border-2 border-neutral-800 rounded-2xl max-w-md w-full p-6 relative shadow-2xl shadow-violet-900/20">

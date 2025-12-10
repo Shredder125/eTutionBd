@@ -87,8 +87,8 @@ const UpdateTuition = () => {
                 <select name="classGrade" value={formData.classGrade} onChange={handleChange} className="select select-bordered w-full pl-10" required>
                   <option value="Class 1-5">Class 1-5</option>
                   <option value="Class 6-8">Class 6-8</option>
-                  <option value="SSC / O-Level">SSC / O-Level</option>
-                  <option value="HSC / A-Level">HSC / A-Level</option>
+                  <option value="CBSE / ICSE">CBSE / ICSE</option>
+                  <option value="State Board">State Board</option>
                   <option value="University">University</option>
                 </select>
               </div>
@@ -100,7 +100,7 @@ const UpdateTuition = () => {
               <label className="label"><span className="label-text font-medium">Location</span></label>
               <div className="relative">
                 <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                <input type="text" name="location" value={formData.location} onChange={handleChange} className="input input-bordered w-full pl-10" required />
+                <input type="text" name="location" value={formData.location} onChange={handleChange} className="input input-bordered w-full pl-10" placeholder="e.g. Mumbai, Delhi" required />
               </div>
             </div>
 
@@ -114,7 +114,7 @@ const UpdateTuition = () => {
           </div>
 
           <div className="form-control w-full">
-              <label className="label"><span className="label-text font-medium">Monthly Budget</span></label>
+              <label className="label"><span className="label-text font-medium">Monthly Budget (INR)</span></label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
                 <input type="number" name="budget" value={formData.budget} onChange={handleChange} className="input input-bordered w-full pl-10" required />

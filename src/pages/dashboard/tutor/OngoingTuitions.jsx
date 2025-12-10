@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useUserAuth } from "../../../context/AuthContext";
-import { Briefcase, CheckCircle, MapPin, DollarSign, Loader2 } from "lucide-react";
+import { Briefcase, CheckCircle, MapPin, Loader2 } from "lucide-react";
 
 const OngoingTuitions = () => {
   const { user } = useUserAuth();
@@ -11,13 +11,10 @@ const OngoingTuitions = () => {
     const fetchOngoing = async () => {
       try {
         const token = localStorage.getItem("access-token");
-        // Reuse the existing applications route and filter client-side
-        const res = await fetch(`http://localhost:5000/applications/tutor/${user.email}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/applications/tutor/${user.email}`, {
             headers: { authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        
-        // Filter for only 'approved' status
         const approvedTuitions = data.filter(app => app.status === 'approved');
         setOngoingTuitions(approvedTuitions);
       } catch (error) {
@@ -37,7 +34,7 @@ const OngoingTuitions = () => {
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <Briefcase className="text-green-500" /> Ongoing Tuitions
         </h1>
-        <p className="text-gray-500 text-sm mt-1">Tuition jobs that have been accepted and paid by the student.</p>
+        <p className="text-gray-500 text-sm mt-1">Tuition jobs that have been accepted and paid by the student in India.</p>
       </div>
 
       {ongoingTuitions.length === 0 ? (
@@ -59,13 +56,13 @@ const OngoingTuitions = () => {
                     </div>
 
                     <div className="text-sm text-gray-500 mb-4 flex items-center gap-2">
-                        <MapPin size={14} /> {app.tuitionData?.location}
+                        <MapPin size={14} /> {app.tuitionData?.location || "Mumbai, India"}
                     </div>
 
                     <div className="bg-green-50 p-3 rounded-lg space-y-2 text-sm text-gray-600 border border-green-100">
                         <div className="flex justify-between items-center">
                             <span>Your Salary:</span>
-                            <span className="font-bold text-primary">৳ {app.expectedSalary}</span>
+                            <span className="font-bold text-primary">₹ {app.expectedSalary}</span>
                         </div>
                         <div className="flex justify-between">
                             <span>Student Email:</span>

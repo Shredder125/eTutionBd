@@ -4,21 +4,19 @@ import { Loader2 } from "lucide-react";
 import Swal from "sweetalert2";
 
 const UpdateApplication = () => {
-  const { id } = useParams(); // grabs the application ID from the URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const [application, setApplication] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expectedSalary, setExpectedSalary] = useState("");
   const [experience, setExperience] = useState("");
 
-  // Fetch the application by ID
   const fetchApplication = async () => {
     try {
       const token = localStorage.getItem("access-token");
       const res = await fetch(`${import.meta.env.VITE_API_URL}/applications/${id}`, {
         headers: { authorization: `Bearer ${token}` },
       });
-
       if (!res.ok) throw new Error("Application not found");
       const data = await res.json();
       setApplication(data);
@@ -27,7 +25,7 @@ const UpdateApplication = () => {
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "Application not found.", "error");
-      navigate("/dashboard/my-applications"); // redirect back if not found
+      navigate("/dashboard/my-applications");
     } finally {
       setLoading(false);
     }
@@ -37,17 +35,14 @@ const UpdateApplication = () => {
     fetchApplication();
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center p-10">
-        <Loader2 className="animate-spin text-primary h-10 w-10" />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex justify-center p-10">
+      <Loader2 className="animate-spin text-primary h-10 w-10" />
+    </div>
+  );
 
   if (!application) return null;
 
-  // Block editing if approved or rejected
   if (application.status !== "pending") {
     return (
       <div className="text-center p-10">
@@ -58,7 +53,6 @@ const UpdateApplication = () => {
     );
   }
 
-  // Handle form submission to update application
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
@@ -85,7 +79,6 @@ const UpdateApplication = () => {
     }
   };
 
-  // Optional: Allow withdrawal from here as well
   const handleWithdraw = async () => {
     Swal.fire({
       title: "Withdraw Application?",
@@ -124,7 +117,7 @@ const UpdateApplication = () => {
 
       <form onSubmit={handleUpdate} className="space-y-4">
         <div>
-          <label className="block text-gray-700 mb-1">Expected Salary (৳)</label>
+          <label className="block text-gray-700 mb-1">Expected Salary (₹)</label>
           <input
             type="number"
             value={expectedSalary}

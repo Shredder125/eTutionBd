@@ -5,7 +5,7 @@ import {
     GraduationCap, Briefcase, Award, CheckCircle2, MessageCircle, ArrowLeft, Share2
 } from "lucide-react";
 import { motion } from "framer-motion";
-import Loader2 from "lucide-react/dist/esm/icons/loader-2"; // Import specific icon if needed
+import Loader2 from "lucide-react/dist/esm/icons/loader-2";
 
 const TutorProfile = () => {
     const { id } = useParams();
@@ -13,11 +13,9 @@ const TutorProfile = () => {
     const [tutor, setTutor] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // --- 1. FETCH DATA ---
     useEffect(() => {
         const fetchTutorDetails = async () => {
             try {
-                // Using your Environment Variable
                 const res = await fetch(`${import.meta.env.VITE_API_URL}/tutors/${id}`);
                 const data = await res.json();
                 setTutor(data);
@@ -38,7 +36,6 @@ const TutorProfile = () => {
 
     if (!tutor) return <div className="text-white text-center pt-20">Tutor not found</div>;
 
-    // --- DATA PARSING ---
     const { 
         name, role, experience, studentEnrollments, tuitionSchedule, 
         email, phone, subject, rating = 4.9, bio, education, location, hourlyRate 
@@ -48,12 +45,9 @@ const TutorProfile = () => {
 
     return (
         <div className="min-h-screen bg-[#050505] text-neutral-200 font-sans pb-20">
-            
-            {/* --- 2. CINEMATIC HERO HEADER --- */}
             <div className="relative h-[350px] w-full overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-violet-900/30 via-[#050505]/80 to-[#050505] z-10" />
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay z-10" />
-                {/* Animated Background Blobs */}
                 <div className="absolute top-[-50%] left-[20%] w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[120px] animate-pulse" />
                 <div className="absolute top-[10%] right-[10%] w-[400px] h-[400px] bg-fuchsia-600/20 rounded-full blur-[120px]" />
                 
@@ -65,14 +59,9 @@ const TutorProfile = () => {
                 </button>
             </div>
 
-            {/* --- 3. MAIN CONTENT CONTAINER --- */}
             <div className="max-w-7xl mx-auto px-6 relative z-20 -mt-32">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    
-                    {/* --- LEFT COLUMN: DETAILS (8 cols) --- */}
                     <div className="lg:col-span-8">
-                        
-                        {/* PROFILE HEADER CARD */}
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -81,7 +70,6 @@ const TutorProfile = () => {
                             <div className="absolute top-0 right-0 p-32 bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
                             
                             <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
-                                {/* AVATAR */}
                                 <div className="relative shrink-0">
                                     <div className="w-40 h-40 rounded-full p-1.5 bg-gradient-to-br from-violet-500 to-fuchsia-600 shadow-2xl">
                                         <img src={imageUrl} alt={name} className="w-full h-full rounded-full object-cover border-4 border-[#0a0a0a]" />
@@ -91,7 +79,6 @@ const TutorProfile = () => {
                                     </div>
                                 </div>
 
-                                {/* INFO */}
                                 <div className="flex-1 text-center md:text-left">
                                     <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2 justify-center md:justify-start">
                                         <h1 className="text-4xl font-black text-white tracking-tight">{name}</h1>
@@ -106,13 +93,12 @@ const TutorProfile = () => {
                                     </p>
 
                                     <div className="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-neutral-500">
-                                        <span className="flex items-center gap-1.5"><MapPin size={14} /> {location || "Dhaka, Bangladesh"}</span>
+                                        <span className="flex items-center gap-1.5"><MapPin size={14} /> {location || "Mumbai, India"}</span>
                                         <span className="flex items-center gap-1.5"><Clock size={14} /> Member since 2023</span>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* STATS ROW */}
                             <div className="grid grid-cols-3 gap-4 mt-8 pt-8 border-t border-white/5">
                                 <div className="text-center md:text-left">
                                     <p className="text-2xl font-bold text-white">{studentEnrollments}+</p>
@@ -132,7 +118,6 @@ const TutorProfile = () => {
                             </div>
                         </motion.div>
 
-                        {/* ABOUT SECTION */}
                         <div className="space-y-8">
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
@@ -148,7 +133,6 @@ const TutorProfile = () => {
                                 </p>
                             </motion.div>
 
-                            {/* EDUCATION & SCHEDULE GRID */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <motion.div 
                                     initial={{ opacity: 0, y: 20 }}
@@ -160,7 +144,7 @@ const TutorProfile = () => {
                                         <GraduationCap className="text-violet-500" /> Education
                                     </h3>
                                     <ul className="space-y-4">
-                                        {(education || ["B.Sc in Computer Science, BUET", "HSC, Dhaka College"]).map((edu, i) => (
+                                        {(education || ["B.Sc in Computer Science, IIT Bombay", "HSC, St. Xavier's College, Mumbai"]).map((edu, i) => (
                                             <li key={i} className="flex gap-3">
                                                 <div className="mt-1 w-2 h-2 rounded-full bg-violet-500 shrink-0" />
                                                 <span className="text-neutral-300">{edu}</span>
@@ -194,11 +178,8 @@ const TutorProfile = () => {
                         </div>
                     </div>
 
-                    {/* --- RIGHT COLUMN: STICKY ACTION CARD (4 cols) --- */}
                     <div className="lg:col-span-4">
                         <div className="sticky top-24 space-y-6">
-                            
-                            {/* ACTION CARD */}
                             <motion.div 
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -207,9 +188,9 @@ const TutorProfile = () => {
                             >
                                 <div className="flex justify-between items-end mb-6 pb-6 border-b border-white/10">
                                     <div>
-                                        <p className="text-neutral-400 text-sm">Starting form</p>
+                                        <p className="text-neutral-400 text-sm">Starting from</p>
                                         <div className="flex items-baseline gap-1">
-                                            <span className="text-3xl font-bold text-white">৳ {hourlyRate || "5000"}</span>
+                                            <span className="text-3xl font-bold text-white">₹ {hourlyRate || "5000"}</span>
                                             <span className="text-neutral-500">/mo</span>
                                         </div>
                                     </div>
@@ -235,7 +216,6 @@ const TutorProfile = () => {
                                 </div>
                             </motion.div>
 
-                            {/* CONTACT INFO MINI CARD */}
                             <motion.div 
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -257,17 +237,14 @@ const TutorProfile = () => {
                                     </button>
                                 </div>
                             </motion.div>
-
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
     );
 };
 
-// Simple User Icon Helper
 const UserIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 );

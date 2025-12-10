@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useUserAuth } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom"; 
 import { 
-  Briefcase, Clock, CheckCircle, XCircle, MapPin, DollarSign, 
+  Briefcase, Clock, CheckCircle, XCircle, MapPin, 
   Loader2, Edit, Trash2 
 } from "lucide-react";
 import Swal from "sweetalert2"; 
@@ -13,7 +13,6 @@ const MyApplications = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); 
 
-  // Fetch applications sent by current tutor
   const fetchMyApplications = async () => {
     try {
       if (!user?.email) return;
@@ -42,7 +41,6 @@ const MyApplications = () => {
     if (user?.email) fetchMyApplications();
   }, [user]);
 
-  // Handle Application Withdrawal (Delete)
   const handleWithdraw = async (id) => {
     Swal.fire({
       title: "Withdraw Application?",
@@ -88,7 +86,7 @@ const MyApplications = () => {
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <Briefcase className="text-primary" /> My Applications
         </h1>
-        <p className="text-gray-500 text-sm mt-1">Track the status of your tuition applications.</p>
+        <p className="text-gray-500 text-sm mt-1">Track the status of your tuition applications in India.</p>
       </div>
 
       {applications.length === 0 ? (
@@ -103,7 +101,6 @@ const MyApplications = () => {
             return (
               <div key={app._id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all relative overflow-hidden">
                 
-                {/* Status Bar */}
                 <div className={`absolute left-0 top-0 h-full w-1 ${
                   app.status === 'approved' ? 'bg-green-500' : 
                   app.status === 'rejected' ? 'bg-red-500' : 'bg-yellow-500'
@@ -121,13 +118,13 @@ const MyApplications = () => {
                   </div>
 
                   <div className="text-sm text-gray-500 mb-4 flex items-center gap-2">
-                    <MapPin size={14} /> {app.tuitionData?.location || "N/A"}
+                    <MapPin size={14} /> {app.tuitionData?.location || "Mumbai, India"}
                   </div>
 
                   <div className="bg-gray-50 p-3 rounded-lg space-y-2 text-sm text-gray-600 border border-gray-100">
                     <div className="flex justify-between items-center">
-                      <span className="flex items-center gap-1"><DollarSign size={14}/> Expected Salary:</span>
-                      <span className="font-bold text-primary">৳ {app.expectedSalary}</span>
+                      <span className="flex items-center gap-1">₹ Expected Salary:</span>
+                      <span className="font-bold text-primary">₹ {app.expectedSalary}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Your Experience:</span>

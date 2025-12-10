@@ -11,8 +11,7 @@ const TutorRevenue = () => {
     const fetchRevenue = async () => {
       try {
         const token = localStorage.getItem("access-token");
-        // Using the new route we just created
-        const res = await fetch(`http://localhost:5000/payments/tutor-history/${user.email}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/payments/tutor-history/${user.email}`, {
           headers: { authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -26,7 +25,6 @@ const TutorRevenue = () => {
     if(user?.email) fetchRevenue();
   }, [user]);
 
-  // Calculate Total Earnings
   const totalEarnings = payments.reduce((sum, item) => sum + item.price, 0);
 
   if (loading) return <div className="p-10 text-center flex justify-center"><Loader2 className="animate-spin text-primary h-10 w-10"/></div>;
@@ -37,23 +35,20 @@ const TutorRevenue = () => {
         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <TrendingUp className="text-primary" /> Revenue History
         </h1>
-        <p className="text-gray-500 text-sm mt-1">Track your total earnings from tuitions.</p>
+        <p className="text-gray-500 text-sm mt-1">Track your total earnings from tuitions in India.</p>
       </div>
 
-      {/* Total Earnings Card */}
       <div className="bg-gradient-to-r from-primary to-purple-600 rounded-2xl p-8 text-white shadow-lg mb-10 flex items-center justify-between relative overflow-hidden">
         <div className="relative z-10">
             <p className="text-primary-content/80 font-medium mb-1">Total Lifetime Earnings</p>
-            <h2 className="text-5xl font-bold tracking-tight">৳ {totalEarnings}</h2>
+            <h2 className="text-5xl font-bold tracking-tight">₹ {totalEarnings}</h2>
         </div>
         <div className="p-4 bg-white/20 rounded-full relative z-10 backdrop-blur-sm">
             <DollarSign size={40} />
         </div>
-        {/* decorative circle */}
         <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/10 rounded-full"></div>
       </div>
 
-      {/* Transactions Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-6 border-b border-gray-100 flex items-center gap-2">
             <CreditCard size={18} className="text-gray-400"/>
@@ -92,14 +87,14 @@ const TutorRevenue = () => {
                                 </td>
                                 <td>
                                     <div className="font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full inline-block">
-                                        + ৳{pay.price}
+                                        + ₹{pay.price}
                                     </div>
                                 </td>
                                 <td className="font-mono text-xs text-gray-500">{pay.transactionId}</td>
                                 <td className="text-gray-500">
                                     <div className="flex items-center gap-2 text-sm">
                                         <Calendar size={14} /> 
-                                        {new Date(pay.date).toLocaleDateString()}
+                                        {new Date(pay.date).toLocaleDateString("en-IN")}
                                     </div>
                                 </td>
                             </tr>

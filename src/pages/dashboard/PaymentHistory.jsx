@@ -12,20 +12,17 @@ const PaymentHistory = () => {
       try {
         if (!user?.email) return;
         const token = localStorage.getItem("access-token");
-        
-        // Fetch payments for this specific student
         const res = await fetch(`http://localhost:5000/payments/my-history/${user.email}`, {
           headers: { authorization: `Bearer ${token}` }
         });
         const data = await res.json();
-        
         if (Array.isArray(data)) {
-            setPayments(data);
+          setPayments(data);
         } else {
-            setPayments([]);
+          setPayments([]);
         }
       } catch (error) {
-        console.error("Error fetching payments:", error);
+        setPayments([]);
       } finally {
         setLoading(false);
       }
@@ -58,7 +55,6 @@ const PaymentHistory = () => {
       ) : (
         <div className="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">
           <table className="table w-full">
-            {/* Table Header */}
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
               <tr>
                 <th className="py-4 pl-6">Tutor Name</th>
@@ -68,8 +64,6 @@ const PaymentHistory = () => {
                 <th>Status</th>
               </tr>
             </thead>
-            
-            {/* Table Body */}
             <tbody>
               {payments.map((pay) => (
                 <tr key={pay._id} className="hover:bg-gray-50/50 border-b border-gray-100 last:border-0 transition-colors">
@@ -84,7 +78,7 @@ const PaymentHistory = () => {
                     </div>
                   </td>
                   <td>
-                    <div className="font-bold text-primary">৳ {pay.price}</div>
+                    <div className="font-bold text-primary">₹ {pay.price}</div>
                   </td>
                   <td>
                     <div className="badge badge-ghost font-mono text-xs text-gray-500 p-3">
